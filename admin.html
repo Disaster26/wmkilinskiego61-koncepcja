@@ -366,7 +366,7 @@ function admin(){
  }
  fk.addEventListener('input',kalk);fk.addEventListener('submit',function(e){e.preventDefault()});kalk();
  /* nowe haslo dla lokalu */
- $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.outerHTML='<b class="ok">nowe hasło nadane</b>';$('#lokale-info').textContent='Lokal '+l.nr+': nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
+ $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.parentNode.innerHTML='<b class="ok">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+': nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
  przelicz(false);
 }
 
