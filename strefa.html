@@ -147,6 +147,7 @@
 'use strict';
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
 var zl=function(v){return v.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})};
+var m3=function(v){return v==null?'brak':v.toLocaleString('pl-PL',{maximumFractionDigits:3})};
 var liczba=function(v,d){return v.toLocaleString('pl-PL',{minimumFractionDigits:d||0,maximumFractionDigits:d===undefined?2:d})};
 var r2=function(v){return Math.round((v+Number.EPSILON)*100)/100};
 var data=function(iso){var p=iso.split('-');return p[2]+'.'+p[1]+'.'+p[0]};
@@ -180,9 +181,14 @@ var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.
 
 var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-10-01',roczna:true,celowe:0};
 
+/* stany wodomierzy zapisane w panelu Zarzadu (w tej przegladarce) */
+var WODA_KLUCZ='wmk61-wodomierze';
+function zuzycie(l){if(l.tylkoG||l.poprz==null||l.obecny==null)return 0;var w=l.obecny-l.poprz;return w>0?Math.round(w*1000)/1000:0}
+(function(){try{var z=JSON.parse(localStorage.getItem(WODA_KLUCZ)||'null');if(!z||!z.stany)return;LOKALE.forEach(function(l){var s=z.stany[l.bud+'/'+l.nr];if(s){l.poprz=s[0];l.obecny=s[1]}});if(z.odczyt){OKRES.odczyt=z.odczyt;OKRES.odczytPoprz=z.odczytPoprz}}catch(e){}})();
+
 function nota(l,ok,ceny){
  ceny=ceny||CENY;ok=ok||OKRES;
- var w=l.tylkoG?0:Math.max(0,l.obecny-l.poprz),rows=[];
+ var w=zuzycie(l),rows=[];
  ceny.forEach(function(c){
   var r={n:c.nazwa,m:c.miara,c:c.cena};
   if(c.typ==='m2'){r.il=l.m2;r.ild=2;r.v=r2(l.m2*c.cena);r.brak=!l.m2;rows.push(r)}
@@ -191,7 +197,7 @@ function nota(l,ok,ceny){
    l.gar.forEach(function(g){rows.push({n:c.nazwa+(g.miejsce?', miejsce nr '+g.miejsce:''),m:c.miara,c:c.cena,il:g.m2,ild:2,v:r2(g.m2*c.cena)})});
   }
   else if(c.typ==='osoby'){r.il=l.os;r.ild=0;r.v=r2(l.os*c.cena);r.brak=l.tylkoG;rows.push(r)}
-  else if(c.typ==='woda'){r.il=w;r.ild=0;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}
+  else if(c.typ==='woda'){r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}
   else if(c.typ==='roczna'){delete r.c;r.v=(ok.roczna&&!l.tylkoG)?r2(c.cena):0;rows.push(r)}
   else{delete r.c;r.v=r2(c.cena);rows.push(r)}
  });
@@ -209,9 +215,9 @@ function notaHTML(N,opt){
  /* tabela jak w arkuszu */
  t+='<div class="tab-wrap"><table class="nota-tab"><thead><tr><th>Poz.</th><th>Nazwa opłaty</th><th>Miara</th><th class="l">Ilość</th><th class="l">Cena jedn. zł brutto</th><th class="l">Wartość brutto zł</th><th class="l">Stan wodomierza obecny / data</th><th class="l">Poprzedni / data</th></tr></thead><tbody>';
  N.rows.forEach(function(r){
-  var il=r.il===undefined?'':(r.brak?'nie dotyczy':liczba(r.il,r.ild)),c=r.c===undefined?'':zl(r.c);
+  var il=r.il===undefined?'':(r.brak?'nie dotyczy':(r.m3?m3(r.il):liczba(r.il,r.ild))),c=r.c===undefined?'':zl(r.c);
   t+='<tr'+(r.sep?' class="sep"':'')+'><td>'+r.p+'</td><td>'+esc(r.n)+'</td><td>'+esc(r.m)+'</td><td class="l">'+il+'</td><td class="l">'+c+'</td><td class="l" data-v="'+r.p+'">'+zl(r.v)+'</td>';
-  t+=r.woda?'<td class="l">'+liczba(l.obecny,0)+'<small>'+data(ok.odczyt)+'</small></td><td class="l">'+liczba(l.poprz,0)+'<small>'+data(ok.odczytPoprz)+'</small></td>':'<td></td><td></td>';
+  t+=r.woda?'<td class="l">'+m3(l.obecny)+'<small>'+data(ok.odczyt)+'</small></td><td class="l">'+m3(l.poprz)+'<small>'+data(ok.odczytPoprz)+'</small></td>':'<td></td><td></td>';
   t+='</tr>';
  });
  var P=N.rows.length;
@@ -223,7 +229,7 @@ function notaHTML(N,opt){
  N.rows.forEach(function(r){
   var wyl='';
   if(r.brak)wyl='nie dotyczy';
-  else if(r.woda)wyl=liczba(l.obecny,0)+' − '+liczba(l.poprz,0)+' = '+r.il+' m³ × '+zl(r.c)+' zł';
+  else if(r.woda)wyl=m3(l.obecny)+' − '+m3(l.poprz)+' = '+m3(r.il)+' m³ × '+zl(r.c)+' zł';
   else if(r.il!==undefined)wyl=liczba(r.il,r.ild)+' '+(r.m==='liczba osób'?'os.':r.m)+' × '+zl(r.c)+' zł';
   t+='<li><span class="np">'+r.p+'</span><div><b>'+esc(r.n)+'</b>'+(wyl?'<small>'+wyl+'</small>':'')+(r.woda?'<small>odczyt '+data(ok.odczyt)+', poprzedni '+data(ok.odczytPoprz)+'</small>':'')+'</div><span class="kw">'+zl(r.v)+' zł</span></li>';
  });
