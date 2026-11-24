@@ -58,6 +58,15 @@
 
 .kalk-dl{margin:8px 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto;border-top:2px solid var(--nieb)}.kalk-dl dt,.kalk-dl dd{margin:0;padding:12px 0;border-bottom:1px solid var(--linia)}.kalk-dl dt{color:var(--szary);font-weight:600}.kalk-dl dd{font-weight:800;font-size:1.25rem;text-align:right;font-variant-numeric:tabular-nums}.kalk-dl dd#k-ods{color:var(--nieb2);font-size:1.6rem}
 @media (max-width:640px){.ceny tr{padding-left:10px;padding-right:10px}}</style>
+<style>/* 24.11: skladniki oplat, garaze */
+.ceny td:nth-child(3){width:96px}.ceny td:nth-child(4){width:136px}.ceny .cena-in input{max-width:98px}.ceny td:nth-child(2) input{padding-left:10px;padding-right:8px}.ceny td:nth-child(5){width:1%;white-space:nowrap;text-align:right;padding-left:4px}.ceny .link.usun{color:#B42318}.ceny .link.usun.potw{font-weight:700}
+.dodaj-skl{display:grid;grid-template-columns:minmax(0,1fr) 190px 150px auto;gap:10px 12px;align-items:end;margin:18px 0 6px;padding:16px;border:1px dashed #B9C3CC;border-radius:6px;background:#fff}
+.dodaj-skl h3{grid-column:1/-1;margin:0;font-size:1.05rem}.dodaj-skl .pole{margin:0}.dodaj-skl .pole input,.dodaj-skl .pole select{height:54px;padding-top:0;padding-bottom:0}.dodaj-skl .btn{min-height:52px}
+.gar{display:flex;align-items:center;gap:8px;white-space:nowrap}.gar+.gar{margin-top:6px}.lista .gar input{width:76px;text-align:left;font-size:16px;padding:5px 8px}
+.woda-przyc{display:flex;flex-wrap:wrap;gap:10px}
+@media (max-width:900px){.ceny td:nth-child(5){grid-column:2;width:auto;text-align:left}.ceny td:first-child{grid-row:span 4}}
+@media (max-width:640px){.dodaj-skl{grid-template-columns:minmax(0,1fr)}.dodaj-skl .btn{width:100%}}
+</style>
 </head>
 <body data-page="admin">
 <div class="demo-pasek"><div class="wrap"><span>Podgląd panelu Zarządu: dane przykładowe. Zmień cenę w tabeli opłat, a nota przeliczy się od razu.</span><a href="strefa.html">Strefa mieszkańca (demo)</a></div></div>
@@ -90,12 +99,14 @@
    <div class="adm-uklad">
     <div>
      <h2 class="tyt">Tabela opłat i cen jednostkowych brutto</h2>
-     <p class="uwaga">Zmiana ceny od razu zmienia noty wszystkich właścicieli. Pozycje 6-12 noty (odsetki, wpłaty celowe, niedopłata, nadpłata) wpisuje się dla konkretnego lokalu albo dla wszystkich w zakładce Noty miesięczne.</p>
-     <div class="przew"><table class="ceny" id="ceny-tab"><thead><tr><th>Poz.</th><th>Nazwa opłaty</th><th>Miara</th><th>Cena jedn. brutto</th></tr></thead><tbody></tbody></table></div>
-     <div class="wszystkie"><span>Nota lokalu A7 za listopad</span><b id="suma-a7">0,00 zł</b><span>Suma not wszystkich 29 lokali</span><b id="suma-wszystkich">0,00 zł</b></div>
+     <p class="uwaga">Zmiana ceny albo nazwy od razu zmienia noty wszystkich właścicieli. Składnik, który przestał obowiązywać (np. woda), usuwa się przyciskiem Usuń, a nowy dodaje pod tabelą. Odsetki, wpłaty celowe, niedopłatę i nadpłatę wpisuje się dla konkretnego lokalu albo dla wszystkich w zakładce Noty miesięczne.</p>
+     <div class="przew"><table class="ceny" id="ceny-tab"><thead><tr><th>Poz.</th><th>Nazwa opłaty</th><th>Miara</th><th>Cena jedn. brutto</th><th></th></tr></thead><tbody></tbody></table></div>
+     <p class="info" id="ceny-info" aria-live="polite"></p>
+     <form class="dodaj-skl" id="form-skl"><h3>Dodaj składnik opłaty</h3><div class="pole"><label for="s-n">Nazwa</label><input id="s-n" name="nazwa" placeholder="np. Fundusz remontowy"></div><div class="pole"><label for="s-m">Liczona od</label><select id="s-m" name="typ"><option value="m2">m² mieszkania</option><option value="osoby">liczby osób</option><option value="stala">stała kwota za lokal</option></select></div><div class="pole"><label for="s-c">Cena brutto (zł)</label><input id="s-c" name="cena" type="number" inputmode="decimal" step="0.01" min="0" value="0.00"></div><div class="pole"><button class="btn" type="submit">Dodaj</button></div></form>
+     <div class="wszystkie"><span>Nota lokalu B1 (blok 61) za listopad</span><b id="suma-a7">0,00 zł</b><span>Suma not wszystkich 29 lokali</span><b id="suma-wszystkich">0,00 zł</b></div>
     </div>
     <div class="podp">
-     <h3>Podgląd noty lokalu A7 po zmianie</h3>
+     <h3>Podgląd noty lokalu B1 (blok 61) po zmianie</h3>
      <div id="podglad-noty"></div>
     </div>
    </div>
@@ -103,17 +114,17 @@
 
   <section data-panel="lokale" role="tabpanel" hidden>
    <h2 class="tyt">Lokale i konta mieszkańców</h2>
-   <p class="uwaga">Każdy lokal ma własne konto. Zarząd może nadać nowe hasło, zmienić właściciela po sprzedaży lokalu albo liczbę osób do wywozu odpadów.</p>
+   <p class="uwaga">Każdy lokal ma własne konto. Zarząd może nadać nowe hasło, zmienić właściciela po sprzedaży lokalu albo liczbę osób do wywozu odpadów. Garaże mają po 34 m²; lokal z dwoma garażami ma w nocie dwa składniki „Czynsz za miejsce w garażu”. Numer miejsca wpisany przy garażu pojawia się w nocie przy tym składniku.</p>
    <p class="info" id="lokale-info" aria-live="polite"></p>
-   <div class="przew"><table class="lista" id="lokale-tab"><thead><tr><th>Lokal</th><th>Budynek</th><th>Właściciel</th><th class="l">Mieszkanie m²</th><th class="l">Garaż m²</th><th class="l">Osoby</th><th class="l">Nota listopad</th><th>Konto</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="6">Razem</td><td class="l" id="lokale-suma"></td><td></td></tr></tfoot></table></div>
+   <div class="przew"><table class="lista" id="lokale-tab"><thead><tr><th>Blok</th><th>Lokal</th><th>Właściciel</th><th class="l">Mieszkanie m²</th><th>Garaż m² i nr miejsca</th><th class="l">Osoby</th><th class="l">Nota listopad</th><th>Konto</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="6">Razem</td><td class="l" id="lokale-suma"></td><td></td></tr></tfoot></table></div>
   </section>
 
   <section data-panel="woda" role="tabpanel" hidden>
-   <h2 class="tyt">Stany wodomierzy: odczyt 01.11.2026</h2>
-   <p class="uwaga">Wpisz stan obecny, a zużycie i kwota za wodę policzą się same. Poprzedni stan przenosi się z poprzedniej noty.</p>
-   <button class="btn ramka" type="button" id="woda-import">Wczytaj odczyt zdalny z pliku</button>
+   <h2 class="tyt">Stany wodomierzy: odczyt <span id="woda-data">01.11.2026</span></h2>
+   <p class="uwaga">Wpisz stan obecny, a zużycie i kwota za wodę policzą się same. Poprzedniego stanu nie trzeba wpisywać: przy następnym odczycie obecny stan sam przechodzi do kolumny Poprzedni.</p>
+   <div class="woda-przyc"><button class="btn ramka" type="button" id="woda-import">Wczytaj odczyt zdalny z pliku</button><button class="btn ramka" type="button" id="woda-nast">Rozpocznij odczyt za grudzień</button></div>
    <p class="info" id="woda-info" aria-live="polite"></p>
-   <div class="przew"><table class="lista" id="woda-tab"><thead><tr><th>Lokal</th><th class="l">Poprzedni 01.10.2026</th><th class="l">Obecny 01.11.2026</th><th class="l">Zużycie m³</th><th class="l">Kwota za wodę zł</th></tr></thead><tbody></tbody></table></div>
+   <div class="przew"><table class="lista" id="woda-tab"><thead><tr><th>Blok</th><th>Lokal</th><th class="l">Poprzedni <span id="woda-hp">01.10.2026</span></th><th class="l">Obecny <span id="woda-ho">01.11.2026</span></th><th class="l">Zużycie m³</th><th class="l">Kwota za wodę zł</th></tr></thead><tbody></tbody></table></div>
   </section>
 
   <section data-panel="noty" role="tabpanel" hidden>
@@ -130,7 +141,7 @@
    </form>
    <div id="noty-wynik" hidden style="margin-top:22px">
     <p id="noty-podsum" tabindex="-1" aria-live="polite"></p>
-    <div class="przew" style="max-width:560px"><table class="lista" id="noty-tab"><thead><tr><th>Lokal</th><th class="l">Do zapłaty</th><th>Podgląd</th></tr></thead><tbody></tbody></table></div>
+    <div class="przew" style="max-width:560px"><table class="lista" id="noty-tab"><thead><tr><th>Blok</th><th>Lokal</th><th class="l">Do zapłaty</th><th>Podgląd</th></tr></thead><tbody></tbody></table></div>
     <div id="noty-jedna" style="margin-top:22px;scroll-margin-top:90px"></div>
    </div>
   </section>
@@ -189,42 +200,49 @@ var MIES=['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sier
 
 /* Tabela oplat administratora: pozycje 1-5 (ceny jak we wzorze noty) */
 var CENY=[
- {nazwa:'Czynsz za mieszkanie',miara:'m²',cena:4.50},
- {nazwa:'Czynsz za miejsce w garażu',miara:'m²',cena:4.50},
- {nazwa:'Wywóz odpadów komunalnych',miara:'liczba osób',cena:24.00},
- {nazwa:'Zużycie wody',miara:'m³',cena:12.73},
- {nazwa:'Opłata roczna za wodomierze PGK',miara:'zł',cena:15.73}
+ {nazwa:'Czynsz za mieszkanie i komórkę',miara:'m²',typ:'m2',cena:4.50},
+ {nazwa:'Czynsz za miejsce w garażu',miara:'m²',typ:'garaz',cena:4.50},
+ {nazwa:'Wywóz odpadów komunalnych',miara:'liczba osób',typ:'osoby',cena:24.00},
+ {nazwa:'Zużycie wody',miara:'m³',typ:'woda',cena:12.73},
+ {nazwa:'Opłata roczna za wodomierze PGK',miara:'zł',typ:'roczna',cena:15.73}
 ];
 
-/* 29 lokali przykladowych: A1-A15 (budynek 61), B1-B14 (budynek 61A) */
+/* Lokale wg listy Zarzadu (24.11.2026): numer, m2 mieszkania, liczba garazy po 34 m2.
+   Bloki 61 i 61A sa numerowane tak samo. G6 to garaz wlasciciela z sasiedniej wspolnoty. */
+var GAR_M2=34;
+var SPIS={'61':[['A1',113.26,0],['A2',100.63,0],['A3',112.19,1],['A4',99.45,2],['A5',68.89,0],['A6',72.20,0],['B1',74.72,1],['B2',50.61,0],['B3',83.27,0],['B4',77.77,0],['B5',55.48,0],['B6',87.45,0],['B7',72.20,0],['B8',68.33,1]],
+ '61A':[['A1',113.26,2],['A2',100.63,1],['A3',112.19,0],['A4',99.45,0],['A5',68.89,0],['A6',72.20,0],['B1',74.72,1],['B2',50.61,0],['B3',83.27,0],['B4',77.77,0],['B5',55.48,1],['B6',87.45,0],['B7',72.20,0],['B8',68.33,1],['G6',0,1]]};
+/* osoby i stany wodomierzy przykladowe */
 var seed=7;function rnd(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}
-var LOKALE=[],garazeA=[2,4,7,9,12,14],garazeB=[1,3,6,8,11,13];
-for(var i=1;i<=29;i++){
- var bud=i<=15?'A':'B',n=i<=15?i:i-15,maG=(bud==='A'?garazeA:garazeB).indexOf(n)>-1;
- var poprz=Math.round(180+rnd()*420),zuz=Math.round(3+rnd()*9);
- LOKALE.push({nr:bud+n,bud:bud==='A'?'61':'61A',m2:r2(38+rnd()*42),g:maG?r2(16+rnd()*18):0,os:1+Math.floor(rnd()*4),poprz:poprz,obecny:poprz+zuz,odsetki:0,celowe:0,inne:0,niedop:0,nadp:0,doRozl:0,uwagi:''});
-}
-/* lokal demo mieszkanca */
-var DEMO=LOKALE[6];Object.assign(DEMO,{m2:64.35,g:18.50,os:2,poprz:405,obecny:412});
+var LOKALE=[];
+['61','61A'].forEach(function(b){SPIS[b].forEach(function(s){
+ var gar=[];for(var k=0;k<s[2];k++)gar.push({m2:GAR_M2,miejsce:''});
+ var tylkoG=!s[1],poprz=Math.round(180+rnd()*420),zuz=Math.round(3+rnd()*9),os=1+Math.floor(rnd()*4);
+ LOKALE.push({nr:s[0],bud:b,m2:s[1],gar:gar,tylkoG:tylkoG,os:tylkoG?0:os,poprz:tylkoG?0:poprz,obecny:tylkoG?0:poprz+zuz,odsetki:0,celowe:0,inne:0,niedop:0,nadp:0,doRozl:0,uwagi:''});
+})});
+/* lokal demo mieszkanca: B1 w bloku 61 (mieszkanie i garaz) */
+var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{os:2,poprz:405,obecny:412});
 
 var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-10-01',roczna:true,celowe:0};
 
 function nota(l,ok,ceny){
  ceny=ceny||CENY;ok=ok||OKRES;
- var w=Math.max(0,l.obecny-l.poprz);
- var rows=[
-  {p:1,n:ceny[0].nazwa,m:ceny[0].miara,il:l.m2,ild:2,c:ceny[0].cena,v:r2(l.m2*ceny[0].cena)},
-  {p:2,n:ceny[1].nazwa,m:ceny[1].miara,il:l.g,ild:2,c:ceny[1].cena,v:r2(l.g*ceny[1].cena),brak:!l.g},
-  {p:3,n:ceny[2].nazwa,m:ceny[2].miara,il:l.os,ild:0,c:ceny[2].cena,v:r2(l.os*ceny[2].cena)},
-  {p:4,n:ceny[3].nazwa,m:ceny[3].miara,il:w,ild:0,c:ceny[3].cena,v:r2(w*ceny[3].cena),woda:true},
-  {p:5,n:ceny[4].nazwa,m:ceny[4].miara,v:ok.roczna?r2(ceny[4].cena):0},
-  {p:6,n:'Odsetki za nieterminowe wpłaty',m:'zł',v:l.odsetki},
-  {p:7,n:'Wpłaty celowe z Uchwały z Zebrania',m:'zł',v:r2(l.celowe+(ok.celowe||0))},
-  {p:8,n:'Wpłaty inne',m:'zł',v:l.inne},
-  {p:9,n:'Niedopłata (+)',m:'zł',v:l.niedop},
-  {p:10,n:'Nadpłata (-)',m:'zł',v:l.nadp}
- ];
- var suma=0;for(var k=0;k<8;k++)suma+=rows[k].v;suma=r2(suma+l.niedop-l.nadp);
+ var w=l.tylkoG?0:Math.max(0,l.obecny-l.poprz),rows=[];
+ ceny.forEach(function(c){
+  var r={n:c.nazwa,m:c.miara,c:c.cena};
+  if(c.typ==='m2'){r.il=l.m2;r.ild=2;r.v=r2(l.m2*c.cena);r.brak=!l.m2;rows.push(r)}
+  else if(c.typ==='garaz'){
+   if(!l.gar.length){r.il=0;r.v=0;r.brak=true;rows.push(r)}
+   l.gar.forEach(function(g){rows.push({n:c.nazwa+(g.miejsce?', miejsce nr '+g.miejsce:''),m:c.miara,c:c.cena,il:g.m2,ild:2,v:r2(g.m2*c.cena)})});
+  }
+  else if(c.typ==='osoby'){r.il=l.os;r.ild=0;r.v=r2(l.os*c.cena);r.brak=l.tylkoG;rows.push(r)}
+  else if(c.typ==='woda'){r.il=w;r.ild=0;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}
+  else if(c.typ==='roczna'){delete r.c;r.v=(ok.roczna&&!l.tylkoG)?r2(c.cena):0;rows.push(r)}
+  else{delete r.c;r.v=r2(c.cena);rows.push(r)}
+ });
+ rows.push({n:'Odsetki za nieterminowe wpłaty',m:'zł',v:l.odsetki},{n:'Wpłaty celowe z Uchwały z Zebrania',m:'zł',v:r2(l.celowe+(ok.celowe||0))},{n:'Wpłaty inne',m:'zł',v:l.inne},{n:'Niedopłata (+)',m:'zł',v:l.niedop,sep:true},{n:'Nadpłata (-)',m:'zł',v:l.nadp,sep:true});
+ rows.forEach(function(r,i){r.p=i+1});
+ var suma=0;for(var k=0;k<rows.length-2;k++)suma+=rows[k].v;suma=r2(suma+l.niedop-l.nadp);
  return {l:l,ok:ok,rows:rows,woda:w,suma:Math.max(0,suma),doRozl:suma<0?r2(-suma):l.doRozl};
 }
 
@@ -237,12 +255,13 @@ function notaHTML(N,opt){
  t+='<div class="tab-wrap"><table class="nota-tab"><thead><tr><th>Poz.</th><th>Nazwa opłaty</th><th>Miara</th><th class="l">Ilość</th><th class="l">Cena jedn. zł brutto</th><th class="l">Wartość brutto zł</th><th class="l">Stan wodomierza obecny / data</th><th class="l">Poprzedni / data</th></tr></thead><tbody>';
  N.rows.forEach(function(r){
   var il=r.il===undefined?'':(r.brak?'nie dotyczy':liczba(r.il,r.ild)),c=r.c===undefined?'':zl(r.c);
-  t+='<tr'+(r.p===9||r.p===10?' class="sep"':'')+'><td>'+r.p+'</td><td>'+esc(r.n)+'</td><td>'+esc(r.m)+'</td><td class="l">'+il+'</td><td class="l">'+c+'</td><td class="l" data-v="'+r.p+'">'+zl(r.v)+'</td>';
+  t+='<tr'+(r.sep?' class="sep"':'')+'><td>'+r.p+'</td><td>'+esc(r.n)+'</td><td>'+esc(r.m)+'</td><td class="l">'+il+'</td><td class="l">'+c+'</td><td class="l" data-v="'+r.p+'">'+zl(r.v)+'</td>';
   t+=r.woda?'<td class="l">'+liczba(l.obecny,0)+'<small>'+data(ok.odczyt)+'</small></td><td class="l">'+liczba(l.poprz,0)+'<small>'+data(ok.odczytPoprz)+'</small></td>':'<td></td><td></td>';
   t+='</tr>';
  });
- t+='<tr class="suma"><td>11</td><td colspan="4">Kwota należności ogółem do zapłaty</td><td class="l">'+zl(N.suma)+'</td><td></td><td></td></tr>';
- t+='<tr><td>12</td><td colspan="4">Kwota do rozliczenia w następnej Nocie jako nadpłata</td><td class="l">'+zl(N.doRozl)+'</td><td></td><td></td></tr>';
+ var P=N.rows.length;
+ t+='<tr class="suma"><td>'+(P+1)+'</td><td colspan="4">Kwota należności ogółem do zapłaty</td><td class="l">'+zl(N.suma)+'</td><td></td><td></td></tr>';
+ t+='<tr><td>'+(P+2)+'</td><td colspan="4">Kwota do rozliczenia w następnej Nocie jako nadpłata</td><td class="l">'+zl(N.doRozl)+'</td><td></td><td></td></tr>';
  t+='</tbody></table></div>';
  /* wersja na telefon: kazda pozycja jako wiersz z wyliczeniem */
  t+='<ol class="nota-lista">';
@@ -253,9 +272,9 @@ function notaHTML(N,opt){
   else if(r.il!==undefined)wyl=liczba(r.il,r.ild)+' '+(r.m==='liczba osób'?'os.':r.m)+' × '+zl(r.c)+' zł';
   t+='<li><span class="np">'+r.p+'</span><div><b>'+esc(r.n)+'</b>'+(wyl?'<small>'+wyl+'</small>':'')+(r.woda?'<small>odczyt '+data(ok.odczyt)+', poprzedni '+data(ok.odczytPoprz)+'</small>':'')+'</div><span class="kw">'+zl(r.v)+' zł</span></li>';
  });
- t+='<li class="suma"><span class="np">11</span><div><b>Kwota należności ogółem do zapłaty</b></div><span class="kw">'+zl(N.suma)+' zł</span></li>';
- t+='<li><span class="np">12</span><div><b>Kwota do rozliczenia w następnej Nocie jako nadpłata</b></div><span class="kw">'+zl(N.doRozl)+' zł</span></li></ol>';
- t+='<dl class="nota-daty"><div><dt>13. Data wystawienia Noty</dt><dd>'+data(ok.wyst)+'</dd></div><div><dt>14. Płatność do</dt><dd>'+data(ok.platnosc)+'</dd></div><div><dt>15. Odsetki naliczane od</dt><dd>'+data(ok.odsetkiOd)+'</dd></div><div><dt>16. Uwagi do Noty</dt><dd>'+(l.uwagi?esc(l.uwagi):'brak')+'</dd></div></dl>';
+ t+='<li class="suma"><span class="np">'+(P+1)+'</span><div><b>Kwota należności ogółem do zapłaty</b></div><span class="kw">'+zl(N.suma)+' zł</span></li>';
+ t+='<li><span class="np">'+(P+2)+'</span><div><b>Kwota do rozliczenia w następnej Nocie jako nadpłata</b></div><span class="kw">'+zl(N.doRozl)+' zł</span></li></ol>';
+ t+='<dl class="nota-daty"><div><dt>'+(P+3)+'. Data wystawienia Noty</dt><dd>'+data(ok.wyst)+'</dd></div><div><dt>'+(P+4)+'. Płatność do</dt><dd>'+data(ok.platnosc)+'</dd></div><div><dt>'+(P+5)+'. Odsetki naliczane od</dt><dd>'+data(ok.odsetkiOd)+'</dd></div><div><dt>'+(P+6)+'. Uwagi do Noty</dt><dd>'+(l.uwagi?esc(l.uwagi):'brak')+'</dd></div></dl>';
  t+='</div></div>';
  return t;
 }
@@ -305,7 +324,25 @@ function strefa(){
 function admin(){
  var root=$('#panel'),pokaz=zakladki(root);pokaz('oplaty');
  var tb=$('#ceny-tab tbody');
- tb.innerHTML=CENY.map(function(c,i){return '<tr><td>'+(i+1)+'</td><td><input aria-label="Nazwa opłaty '+(i+1)+'" data-nazwa="'+i+'" value="'+esc(c.nazwa)+'"></td><td>'+esc(c.miara)+'</td><td><div class="cena-in"><input aria-label="Cena jednostkowa brutto pozycji '+(i+1)+'" type="number" inputmode="decimal" step="0.01" min="0" data-cena="'+i+'" value="'+c.cena.toFixed(2)+'"><span>zł</span></div></td></tr>'}).join('');
+ function rysujCeny(){
+  tb.innerHTML=CENY.map(function(c,i){return '<tr><td>'+(i+1)+'</td><td><input aria-label="Nazwa opłaty '+(i+1)+'" data-nazwa="'+i+'" value="'+esc(c.nazwa)+'"></td><td>'+esc(c.miara)+'</td><td><div class="cena-in"><input aria-label="Cena jednostkowa brutto pozycji '+(i+1)+'" type="number" inputmode="decimal" step="0.01" min="0" data-cena="'+i+'" value="'+c.cena.toFixed(2)+'"><span>zł</span></div></td><td><button type="button" class="link usun" data-usun="'+i+'" aria-label="Usuń składnik '+esc(c.nazwa)+'">Usuń</button></td></tr>'}).join('');
+ }
+ rysujCeny();
+ tb.addEventListener('click',function(e){
+  var b=e.target.closest('[data-usun]');if(!b)return;
+  if(!b.classList.contains('potw')){$$('.usun.potw',tb).forEach(function(x){x.classList.remove('potw');x.textContent='Usuń'});b.classList.add('potw');b.textContent='Potwierdź usunięcie';return}
+  var c=CENY.splice(+b.dataset.usun,1)[0];rysujCeny();przelicz(true);
+  $('#ceny-info').textContent='Składnik „'+c.nazwa+'” usunięty: nie będzie go w kolejnych notach. Noty już wystawione zostają bez zmian (w podglądzie zmiana nie jest zapisywana).';
+ });
+ $('#form-skl').addEventListener('submit',function(e){
+  e.preventDefault();var fs=e.target,nz=fs.nazwa.value.trim();if(!nz){fs.nazwa.focus();return}
+  var typ=fs.typ.value,cena=parseFloat(String(fs.cena.value).replace(',','.'))||0;
+  var ix=CENY.length;CENY.forEach(function(c,i){if(c.typ==='woda'||c.typ==='roczna'){if(ix===CENY.length)ix=i}});
+  CENY.splice(ix,0,{nazwa:nz,typ:typ,cena:cena,miara:typ==='m2'?'m²':typ==='osoby'?'liczba osób':'zł'});
+  rysujCeny();przelicz(true);fs.reset();
+  $('#ceny-info').textContent='Dodano składnik „'+nz+'”. Pojawi się w notach wszystkich lokali.';
+ });
+ function odswiezPodglad(){var N=nota(DEMO);$('#podglad-noty').innerHTML=notaHTML(N,{mala:true})}
  function przelicz(blysk){
   var SEL='#podglad-noty .kw,#podglad-noty [data-suma],#suma-wszystkich,#suma-a7';
   var przed=$$(SEL).map(function(e){return e.textContent});
@@ -316,16 +353,30 @@ function admin(){
   rysujLokale();rysujWode();
  }
  tb.addEventListener('input',function(e){var t=e.target;if(t.dataset.cena!==undefined){var v=parseFloat(String(t.value).replace(',','.'));if(!isNaN(v)&&v>=0){CENY[+t.dataset.cena].cena=v;przelicz(true)}}else if(t.dataset.nazwa!==undefined){CENY[+t.dataset.nazwa].nazwa=t.value||'Opłata';przelicz(false)}});
+ function garHTML(l,i){
+  if(!l.gar.length)return '-';
+  return l.gar.map(function(g,k){return '<div class="gar">'+liczba(g.m2,2)+' <label>nr <input aria-label="Numer miejsca w garażu, lokal '+l.nr+' blok '+l.bud+', garaż '+(k+1)+'" data-gar="'+i+'-'+k+'" value="'+esc(g.miejsce)+'" maxlength="8"></label></div>'}).join('');
+ }
  function rysujLokale(){
-  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l){var n=nota(l);s+=n.suma;return '<tr'+(l===DEMO?' class="demo"':'')+'><td><b>'+l.nr+'</b></td><td>'+l.bud+'</td><td>Właściciel lokalu '+l.nr+'</td><td class="l">'+liczba(l.m2,2)+'</td><td class="l">'+(l.g?liczba(l.g,2):'-')+'</td><td class="l">'+l.os+'</td><td class="l">'+zl(n.suma)+'</td><td><span class="ok">aktywne</span> <button type="button" class="link" data-haslo="'+LOKALE.indexOf(l)+'">Nowe hasło</button></td></tr>'}).join('');
+  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;return '<tr'+(l===DEMO?' class="demo"':'')+'><td>'+l.bud+'</td><td><b>'+l.nr+'</b></td><td>'+(l.tylkoG?'Właściciel garażu '+l.nr+' (sąsiednia wspólnota)':'Właściciel lokalu '+l.nr)+'</td><td class="l">'+(l.m2?liczba(l.m2,2):'-')+'</td><td>'+garHTML(l,i)+'</td><td class="l">'+(l.tylkoG?'-':l.os)+'</td><td class="l">'+zl(n.suma)+'</td><td><span class="ok">aktywne</span> <button type="button" class="link" data-haslo="'+i+'">Nowe hasło</button></td></tr>'}).join('');
   $('#lokale-suma').textContent=zl(s)+' zł';
  }
+ $('#lokale-tab').addEventListener('input',function(e){var t=e.target;if(!t.dataset.gar)return;var p=t.dataset.gar.split('-'),l=LOKALE[+p[0]];l.gar[+p[1]].miejsce=t.value.trim();if(l===DEMO)odswiezPodglad()});
+ function cenaWody(){var c=CENY.filter(function(x){return x.typ==='woda'})[0];return c?c.cena:0}
  function rysujWode(){
-  $('#woda-tab tbody').innerHTML=LOKALE.map(function(l,i){var w=Math.max(0,l.obecny-l.poprz);return '<tr><td><b>'+l.nr+'</b></td><td class="l">'+l.poprz+'</td><td class="l"><input aria-label="Stan obecny wodomierza lokalu '+l.nr+'" type="number" inputmode="numeric" min="0" data-woda="'+i+'" value="'+l.obecny+'"></td><td class="l">'+w+'</td><td class="l">'+zl(w*CENY[3].cena)+'</td></tr>'}).join('');
+  $('#woda-tab tbody').innerHTML=LOKALE.map(function(l,i){if(l.tylkoG)return '';var w=Math.max(0,l.obecny-l.poprz);return '<tr><td>'+l.bud+'</td><td><b>'+l.nr+'</b></td><td class="l">'+l.poprz+'</td><td class="l"><input aria-label="Stan obecny wodomierza lokalu '+l.nr+' blok '+l.bud+'" type="number" inputmode="numeric" min="0" data-woda="'+i+'" value="'+l.obecny+'"></td><td class="l">'+w+'</td><td class="l">'+zl(w*cenaWody())+'</td></tr>'}).join('');
  }
  var wt=$('#woda-tab');
- wt.addEventListener('change',function(e){var t=e.target;if(t.dataset.woda===undefined)return;var l=LOKALE[+t.dataset.woda],v=parseInt(t.value,10);if(isNaN(v)||v<l.poprz){t.value=l.obecny;$('#woda-info').textContent='Lokal '+l.nr+': stan obecny nie może być mniejszy niż poprzedni ('+l.poprz+').';return}l.obecny=v;$('#woda-info').textContent='Zapisano stan lokalu '+l.nr+': zużycie '+(v-l.poprz)+' m³.';przelicz(false)});
+ wt.addEventListener('change',function(e){var t=e.target;if(t.dataset.woda===undefined)return;var l=LOKALE[+t.dataset.woda],v=parseInt(t.value,10);if(isNaN(v)||v<l.poprz){t.value=l.obecny;$('#woda-info').textContent='Lokal '+l.nr+' (blok '+l.bud+'): stan obecny nie może być mniejszy niż poprzedni ('+l.poprz+').';return}l.obecny=v;$('#woda-info').textContent='Zapisano stan lokalu '+l.nr+' (blok '+l.bud+'): zużycie '+(v-l.poprz)+' m³.';przelicz(false)});
  $('#woda-import').addEventListener('click',function(){$('#woda-info').textContent='W docelowej stronie tutaj wczytuje się plik z odczytem zdalnym wodomierzy, a stany wpisują się same. W podglądzie stany są już wpisane.'});
+ /* nastepny odczyt: obecne stany przechodza do kolumny Poprzedni */
+ $('#woda-nast').addEventListener('click',function(){
+  var b=this;LOKALE.forEach(function(l){if(!l.tylkoG)l.poprz=l.obecny});
+  OKRES.odczytPoprz=OKRES.odczyt;OKRES.odczyt='2026-12-01';
+  $('#woda-data').textContent=data(OKRES.odczyt);$('#woda-hp').textContent=data(OKRES.odczytPoprz);$('#woda-ho').textContent=data(OKRES.odczyt);
+  b.disabled=true;przelicz(false);
+  $('#woda-info').textContent='Stany z 01.11.2026 przeszły do kolumny Poprzedni. Wystarczy wpisać nowe stany obecne (albo wczytać plik z odczytem zdalnym).';
+ });
  /* noty */
  var f=$('#form-noty');
  f.addEventListener('submit',function(e){
@@ -333,7 +384,7 @@ function admin(){
   var mi=+f.mies.value;OKRES.mies=mi;var mm=('0'+mi).slice(-2),pm=('0'+(mi===1?12:mi-1)).slice(-2);
   OKRES.wyst=f.wyst.value;OKRES.platnosc=f.plat.value;OKRES.odsetkiOd=f.ods.value;OKRES.odczyt='2026-'+mm+'-01';OKRES.odczytPoprz='2026-'+pm+'-01';
   OKRES.roczna=f.roczna.checked;OKRES.celowe=parseFloat(String(f.celowe.value).replace(',','.'))||0;
-  var s=0,rows=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;return '<tr><td><b>'+l.nr+'</b></td><td class="l">'+zl(n.suma)+'</td><td><button type="button" class="link" data-pokaz="'+i+'">Pokaż notę</button></td></tr>'}).join('');
+  var s=0,rows=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;return '<tr><td>'+l.bud+'</td><td><b>'+l.nr+'</b></td><td class="l">'+zl(n.suma)+'</td><td><button type="button" class="link" data-pokaz="'+i+'">Pokaż notę</button></td></tr>'}).join('');
   $('#noty-wynik').hidden=false;
   $('#noty-podsum').textContent='Wygenerowano 29 not za '+MIES[mi-1]+' 2026. Suma należności: '+zl(s)+' zł. Właściciele zobaczą swoje noty po zalogowaniu.';
   $('#noty-tab tbody').innerHTML=rows;$('#noty-jedna').innerHTML='';
@@ -355,7 +406,7 @@ function admin(){
  }
  fk.addEventListener('input',kalk);fk.addEventListener('submit',function(e){e.preventDefault()});kalk();
  /* nowe haslo dla lokalu */
- $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.parentNode.innerHTML='<b class="ok">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+': nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
+ $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.parentNode.innerHTML='<b class="ok">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+' (blok '+l.bud+'): nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
  przelicz(false);
 }
 
