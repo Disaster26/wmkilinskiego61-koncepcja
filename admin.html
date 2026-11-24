@@ -207,21 +207,21 @@ var CENY=[
  {nazwa:'Opłata roczna za wodomierze PGK',miara:'zł',typ:'roczna',cena:15.73}
 ];
 
-/* Lokale wg listy Zarzadu (24.11.2026): numer, m2 mieszkania, liczba garazy po 34 m2.
+/* Lokale wg listy Zarzadu (24.11.2026): numer, m2 mieszkania, liczba garazy po 34 m2, liczba osob do odpadow.
    Bloki 61 i 61A sa numerowane tak samo. G6 to garaz wlasciciela z sasiedniej wspolnoty. */
 var GAR_M2=34;
-var SPIS={'61':[['A1',113.26,0],['A2',100.63,0],['A3',112.19,1],['A4',99.45,2],['A5',68.89,0],['A6',72.20,0],['B1',74.72,1],['B2',50.61,0],['B3',83.27,0],['B4',77.77,0],['B5',55.48,0],['B6',87.45,0],['B7',72.20,0],['B8',68.33,1]],
- '61A':[['A1',113.26,2],['A2',100.63,1],['A3',112.19,0],['A4',99.45,0],['A5',68.89,0],['A6',72.20,0],['B1',74.72,1],['B2',50.61,0],['B3',83.27,0],['B4',77.77,0],['B5',55.48,1],['B6',87.45,0],['B7',72.20,0],['B8',68.33,1],['G6',0,1]]};
-/* osoby i stany wodomierzy przykladowe */
+var SPIS={'61':[['A1',113.26,0,1],['A2',100.63,0,2],['A3',112.19,1,2],['A4',99.45,2,2],['A5',68.89,0,2],['A6',72.20,0,0],['B1',74.72,1,1],['B2',50.61,0,2],['B3',83.27,0,2],['B4',77.77,0,1],['B5',55.48,0,3],['B6',87.45,0,1],['B7',72.20,0,4],['B8',68.33,1,4]],
+ '61A':[['A1',113.26,2,4],['A2',100.63,1,3],['A3',112.19,0,2],['A4',99.45,0,1],['A5',68.89,0,3],['A6',72.20,0,2],['B1',74.72,1,2],['B2',50.61,0,1],['B3',83.27,0,3],['B4',77.77,0,2],['B5',55.48,1,2],['B6',87.45,0,0],['B7',72.20,0,5],['B8',68.33,1,0],['G6',0,1,0]]};
+/* stany wodomierzy przykladowe */
 var seed=7;function rnd(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}
 var LOKALE=[];
 ['61','61A'].forEach(function(b){SPIS[b].forEach(function(s){
  var gar=[];for(var k=0;k<s[2];k++)gar.push({m2:GAR_M2,miejsce:''});
- var tylkoG=!s[1],poprz=Math.round(180+rnd()*420),zuz=Math.round(3+rnd()*9),os=1+Math.floor(rnd()*4);
+ var tylkoG=!s[1],poprz=Math.round(180+rnd()*420),zuz=Math.round(3+rnd()*9),os=(rnd(),s[3]);
  LOKALE.push({nr:s[0],bud:b,m2:s[1],gar:gar,tylkoG:tylkoG,os:tylkoG?0:os,poprz:tylkoG?0:poprz,obecny:tylkoG?0:poprz+zuz,odsetki:0,celowe:0,inne:0,niedop:0,nadp:0,doRozl:0,uwagi:''});
 })});
 /* lokal demo mieszkanca: B1 w bloku 61 (mieszkanie i garaz) */
-var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{os:2,poprz:405,obecny:412});
+var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{poprz:405,obecny:412});
 
 var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-10-01',roczna:true,celowe:0};
 
