@@ -37,7 +37,7 @@
 .lista td{padding:9px 10px;border-bottom:1px solid var(--linia);white-space:nowrap}
 .lista .l{text-align:right}
 .lista tr.demo td{background:#EAF3FB}
-.w-brak{color:var(--szary);font-size:.9rem}.w-zle{color:var(--czer);font-weight:700;font-size:.9rem}.w-uwaga{color:#8A5A00;font-weight:700;font-size:.85rem}.woda-przyc{display:flex;flex-wrap:wrap;gap:10px}#woda-tab input{width:130px}@media (max-width:640px){#woda-tab thead{display:none}#woda-tab,#woda-tab tbody{display:block}#woda-tab tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;padding:14px 12px;border-bottom:1px solid var(--linia)}#woda-tab td{display:block;border:0;padding:0;text-align:left;white-space:normal}#woda-tab td::before{content:attr(data-l);display:block;font-size:.8rem;font-weight:700;color:var(--szary);margin-bottom:2px}#woda-tab input{width:100%}.woda-przyc .btn{width:100%}}.lista input{width:110px;font:inherit;font-size:18px;padding:6px 10px;border:2px solid #B9C3CC;border-radius:6px;text-align:right}
+.w-brak{color:var(--szary);font-size:.9rem}.w-zle{color:var(--czer);font-weight:700;font-size:.9rem}.w-uwaga{color:#8A5A00;font-weight:700;font-size:.85rem}.woda-przyc{display:flex;flex-wrap:wrap;gap:10px}.woda-kroki{margin:18px 0;padding-left:1.4em;max-width:900px}.woda-kroki li{margin:4px 0}.woda-stan{margin:14px 0 0;padding:12px 16px;border-radius:6px;background:#EEF1F4;font-weight:600}.woda-stan.ok{background:#E3F4E8;color:#14532D}.woda-stan.brak{background:#FFF4DB;color:#6B4600}.woda-dol{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin-top:18px}.woda-dol .btn{flex:0 0 auto}.woda-dol .uwaga{flex:1 1 320px;margin:0}#form-cykl{margin:0 0 6px}#woda-tab input{width:130px}@media (max-width:640px){#woda-tab thead{display:none}#woda-tab,#woda-tab tbody{display:block}#woda-tab tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;padding:14px 12px;border-bottom:1px solid var(--linia)}#woda-tab td{display:block;border:0;padding:0;text-align:left;white-space:normal}#woda-tab td::before{content:attr(data-l);display:block;font-size:.8rem;font-weight:700;color:var(--szary);margin-bottom:2px}#woda-tab input{width:100%}.woda-przyc .btn{width:100%}}.lista input{width:110px;font:inherit;font-size:18px;padding:6px 10px;border:2px solid #B9C3CC;border-radius:6px;text-align:right}
 .lista tfoot td{font-weight:800;border-top:2px solid var(--gran)}
 .ok{color:var(--ziel2);font-weight:700}
 .przew{overflow-x:auto;border:1px solid var(--linia);border-radius:6px;background:#fff}
@@ -121,10 +121,23 @@
 
   <section data-panel="woda" role="tabpanel" hidden>
    <h2 class="tyt">Stany wodomierzy: odczyt <span id="woda-data">01.11.2026</span></h2>
-   <p class="uwaga">Dla każdego lokalu wpisz stan poprzedni (z ostatniego odczytu) i stan obecny, w m³, tak jak na liczniku. Można pisać z przecinkiem albo z kropką, np. 412,345. Zużycie = stan obecny minus poprzedni, kwota liczy się sama. Enter przechodzi do następnego lokalu. Przy kolejnym odczycie obecne stany same przechodzą do kolumny Poprzedni.</p>
-   <div class="woda-przyc"><button class="btn ramka" type="button" id="woda-import">Wczytaj odczyt zdalny z pliku</button><button class="btn ramka" type="button" id="woda-nast">Rozpocznij odczyt za grudzień</button><button class="btn ramka" type="button" id="woda-czysc">Wyczyść przykładowe stany</button><button class="btn ramka" type="button" id="woda-przyklad">Przywróć przykłady</button></div>
+   <form class="karta form-noty" id="form-cykl">
+    <div class="pole"><label for="w-cykl">Odczyty wodomierzy</label><select id="w-cykl" name="cykl"><option value="2">co 2 miesiące</option><option value="1">co miesiąc</option></select></div>
+    <div class="pole"><label for="w-pop">Data poprzedniego odczytu</label><input id="w-pop" name="pop" type="date" value="2026-09-01"></div>
+    <div class="pole"><label for="w-ob">Data tego odczytu</label><input id="w-ob" name="ob" type="date" value="2026-11-01"></div>
+    <p class="uwaga pelna">Co 2 miesiące: odczyt 1. dnia miesiąca nieparzystego (1 stycznia, 1 marca, 1 maja, 1 lipca, 1 września, 1 listopada). Gdy wejdą odczyty co miesiąc, wystarczy wybrać „co miesiąc”. Daty podpowiadają się same, w razie potrzeby można je poprawić.</p>
+   </form>
+   <ol class="woda-kroki">
+    <li>Wpisz dla każdego lokalu stan poprzedni i stan obecny, w m³, tak jak na liczniku (z przecinkiem albo kropką, np. 412,345). Enter przechodzi do następnego lokalu.</li>
+    <li>Każda wpisana liczba zapamiętuje się od razu, więc nic nie zginie po zamknięciu strony.</li>
+    <li>Na koniec kliknij <b>Zapisz odczyt</b>. Panel sprawdzi, czy nie brakuje stanów, i zatwierdzi odczyt do not.</li>
+    <li>Przy następnym odczycie kliknij <b>Rozpocznij następny odczyt</b>: obecne stany przejdą do kolumny Poprzedni.</li>
+   </ol>
+   <div class="woda-przyc"><button class="btn" type="button" id="woda-zapisz">Zapisz odczyt</button><button class="btn ramka" type="button" id="woda-nast">Rozpocznij następny odczyt</button><button class="btn ramka" type="button" id="woda-import">Wczytaj odczyt zdalny z pliku</button><button class="btn ramka" type="button" id="woda-czysc">Wyczyść przykładowe stany</button><button class="btn ramka" type="button" id="woda-przyklad">Przywróć przykłady</button></div>
+   <p class="woda-stan" id="woda-stan" aria-live="polite"></p>
    <p class="info" id="woda-info" aria-live="polite"></p>
    <div class="przew"><table class="lista" id="woda-tab"><thead><tr><th>Blok</th><th>Lokal</th><th class="l">Poprzedni <span id="woda-hp">01.10.2026</span></th><th class="l">Obecny <span id="woda-ho">01.11.2026</span></th><th class="l">Zużycie m³</th><th class="l">Kwota za wodę zł</th></tr></thead><tbody></tbody></table></div>
+   <div class="woda-dol"><button class="btn" type="button" id="woda-zapisz2">Zapisz odczyt</button><p class="uwaga">W podglądzie stany zapisują się w tej przeglądarce. Na docelowej stronie zapisują się na serwerze, więc Zarząd widzi je z każdego komputera i telefonu.</p></div>
   </section>
 
   <section data-panel="noty" role="tabpanel" hidden>
@@ -137,6 +150,7 @@
     <div class="pole"><label for="n-cel">Wpłata celowa z uchwały, każdy lokal (zł)</label><input id="n-cel" name="celowe" type="number" step="0.01" min="0" value="0"></div>
     <div class="pole"></div>
     <label class="chk pelna"><input type="checkbox" name="roczna" checked> Dolicz opłatę roczną za wodomierze PGK w tej nocie</label>
+    <label class="chk pelna"><input type="checkbox" name="woda" checked> <span id="n-woda-opis">Dolicz wodę z odczytu 01.11.2026 (poprzedni 01.09.2026)</span></label>
     <div class="pelna"><button class="btn" type="submit">Wygeneruj noty dla 29 lokali</button></div>
    </form>
    <div id="noty-wynik" hidden style="margin-top:22px">
@@ -224,12 +238,12 @@ var LOKALE=[];
 /* lokal demo mieszkanca: B1 w bloku 61 (mieszkanie i garaz) */
 var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{poprz:405,obecny:412});
 
-var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-10-01',roczna:true,celowe:0};
+var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-09-01',cykl:2,roczna:true,celowe:0};
 
 /* stany wodomierzy zapisane w panelu Zarzadu (w tej przegladarce) */
 var WODA_KLUCZ='wmk61-wodomierze';
 function zuzycie(l){if(l.tylkoG||l.poprz==null||l.obecny==null)return 0;var w=l.obecny-l.poprz;return w>0?Math.round(w*1000)/1000:0}
-(function(){try{var z=JSON.parse(localStorage.getItem(WODA_KLUCZ)||'null');if(!z||!z.stany)return;LOKALE.forEach(function(l){var s=z.stany[l.bud+'/'+l.nr];if(s){l.poprz=s[0];l.obecny=s[1]}});if(z.odczyt){OKRES.odczyt=z.odczyt;OKRES.odczytPoprz=z.odczytPoprz}}catch(e){}})();
+(function(){try{var z=JSON.parse(localStorage.getItem(WODA_KLUCZ)||'null');if(!z||!z.stany)return;LOKALE.forEach(function(l){var s=z.stany[l.bud+'/'+l.nr];if(s){l.poprz=s[0];l.obecny=s[1]}});if(z.odczyt){OKRES.odczyt=z.odczyt;OKRES.odczytPoprz=z.odczytPoprz}if(z.cykl)OKRES.cykl=z.cykl;else if(z.odczyt==='2026-11-01'&&z.odczytPoprz==='2026-10-01')OKRES.odczytPoprz='2026-09-01';OKRES.zapisano=z.zapisano||null}catch(e){}})();
 
 function nota(l,ok,ceny){
  ceny=ceny||CENY;ok=ok||OKRES;
@@ -242,7 +256,7 @@ function nota(l,ok,ceny){
    l.gar.forEach(function(g){rows.push({n:c.nazwa+(g.miejsce?', miejsce nr '+g.miejsce:''),m:c.miara,c:c.cena,il:g.m2,ild:2,v:r2(g.m2*c.cena)})});
   }
   else if(c.typ==='osoby'){r.il=l.os;r.ild=0;r.v=r2(l.os*c.cena);r.brak=l.tylkoG;rows.push(r)}
-  else if(c.typ==='woda'){r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}
+  else if(c.typ==='woda'){if(ok.bezWody){r.n+=' (bez odczytu w tym miesiącu)';r.il=0;r.m3=true;r.v=0;r.brak=l.tylkoG;rows.push(r)}else{r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}}
   else if(c.typ==='roczna'){delete r.c;r.v=(ok.roczna&&!l.tylkoG)?r2(c.cena):0;rows.push(r)}
   else{delete r.c;r.v=r2(c.cena);rows.push(r)}
  });
@@ -383,7 +397,30 @@ function admin(){
   $('#woda-data').textContent=data(OKRES.odczyt);$('#woda-hp').textContent=data(OKRES.odczytPoprz);$('#woda-ho').textContent=data(OKRES.odczyt);
  }
  function czytajStan(v){v=String(v==null?'':v).replace(/[\s ]/g,'').replace(/m3|m³/gi,'').replace(',','.');if(v==='')return null;if(!/^\d+(\.\d+)?$/.test(v))return NaN;return Math.round(parseFloat(v)*1000)/1000}
- function zapiszWode(){try{var st={};LOKALE.forEach(function(l){if(!l.tylkoG)st[l.bud+'/'+l.nr]=[l.poprz,l.obecny]});localStorage.setItem(WODA_KLUCZ,JSON.stringify({stany:st,odczyt:OKRES.odczyt,odczytPoprz:OKRES.odczytPoprz}))}catch(e){}}
+ function zapiszWode(){try{var st={};LOKALE.forEach(function(l){if(!l.tylkoG)st[l.bud+'/'+l.nr]=[l.poprz,l.obecny]});localStorage.setItem(WODA_KLUCZ,JSON.stringify({stany:st,odczyt:OKRES.odczyt,odczytPoprz:OKRES.odczytPoprz,cykl:OKRES.cykl,zapisano:OKRES.zapisano}))}catch(e){}}
+ /* cykl odczytow: co 2 miesiace (1. dzien miesiaca nieparzystego) albo co miesiac */
+ function dodajMies(iso,n){var p=iso.split('-'),r=+p[0],m=+p[1]-1+n;r+=Math.floor(m/12);m=((m%12)+12)%12;return r+'-'+('0'+(m+1)).slice(-2)+'-01'}
+ function nastOdczyt(){var n=dodajMies(OKRES.odczyt,1);if(OKRES.cykl==2&&(+n.split('-')[1])%2===0)n=dodajMies(n,1);return n}
+ function kompletWody(){var w=0,b=0,z=0,suma=0;LOKALE.forEach(function(l){if(l.tylkoG)return;if(l.poprz==null||l.obecny==null)b++;else if(l.obecny<l.poprz)z++;else{w++;suma+=zuzycie(l)}});return {w:w,b:b,z:z,suma:Math.round(suma*1000)/1000,ile:w+b+z}}
+ function godz(d){d=new Date(d);return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear()+', godz. '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+ function stanWody(){
+  var e=$('#woda-stan'),k=kompletWody();
+  if(OKRES.zapisano){e.className='woda-stan ok';e.textContent='Odczyt z '+data(OKRES.odczyt)+' zapisany '+godz(OKRES.zapisano)+'. Uzupełnione lokale: '+k.w+' z '+k.ile+', zużycie razem '+m3(k.suma)+' m³.'+(k.b||k.z?' Uwaga: '+(k.b?k.b+' bez stanu':'')+(k.b&&k.z?', ':'')+(k.z?k.z+' z obecnym mniejszym niż poprzedni':'')+'.':'')}
+  else{e.className='woda-stan brak';e.textContent='Odczyt z '+data(OKRES.odczyt)+' nie jest jeszcze zapisany. Uzupełnione lokale: '+k.w+' z '+k.ile+'. Po wpisaniu wszystkich stanów kliknij Zapisz odczyt.'}
+  $('#woda-nast').textContent='Rozpocznij następny odczyt ('+data(nastOdczyt())+')';
+  var fc=$('#form-cykl');fc.cykl.value=String(OKRES.cykl);fc.pop.value=OKRES.odczytPoprz;fc.ob.value=OKRES.odczyt;
+  var no=$('#n-woda-opis');if(no)no.textContent='Dolicz wodę z odczytu '+data(OKRES.odczyt)+' (poprzedni '+data(OKRES.odczytPoprz)+')';
+ }
+ function zatwierdzWode(){
+  var k=kompletWody(),info=$('#woda-info');
+  if(k.b||k.z){
+   var brak=[];LOKALE.forEach(function(l){if(!l.tylkoG&&(l.poprz==null||l.obecny==null||l.obecny<l.poprz))brak.push(l.bud+' '+l.nr)});
+   if(!confirm('Nie wszystkie lokale mają poprawne stany ('+brak.join(', ')+'). Zapisać odczyt mimo to? Dla tych lokali woda w nocie wyniesie 0 zł.'))return;
+  }
+  OKRES.zapisano=Date.now();zapiszWode();stanWody();
+  info.textContent='Zapisano odczyt z '+data(OKRES.odczyt)+'. Noty policzą wodę z tego odczytu.';
+  $('#woda-stan').scrollIntoView({behavior:'smooth',block:'center'});
+ }
  var wt=$('#woda-tab');
  wt.addEventListener('change',function(e){
   var t=e.target;if(t.dataset.woda===undefined)return;
@@ -394,7 +431,7 @@ function admin(){
   if(l.poprz==null||l.obecny==null)info.textContent=kto+'zapisano. Uzupełnij '+(l.poprz==null?'stan poprzedni':'stan obecny')+', wtedy policzy się zużycie.';
   else if(l.obecny<l.poprz)info.textContent=kto+'stan obecny ('+m3(l.obecny)+') jest mniejszy niż poprzedni ('+m3(l.poprz)+'). Sprawdź odczyt, do czasu poprawki woda w nocie wynosi 0 zł.';
   else info.textContent=kto+'zapisano, zużycie '+m3(zuzycie(l))+' m³'+(zuzycie(l)>WODA_DUZO?' (dużo jak na jeden okres, sprawdź odczyt).':'.');
-  zapiszWode();przelicz(false,true);
+  OKRES.zapisano=null;zapiszWode();stanWody();przelicz(false,true);
  });
  wt.addEventListener('keydown',function(e){
   var t=e.target;if(e.key!=='Enter'||t.dataset.woda===undefined)return;e.preventDefault();
@@ -405,14 +442,25 @@ function admin(){
  $('#woda-import').addEventListener('click',function(){$('#woda-info').textContent='W docelowej stronie tutaj wczytuje się plik z odczytem zdalnym wodomierzy, a stany wpisują się same. W podglądzie stany wpisuje się ręcznie.'});
  /* nastepny odczyt: obecne stany przechodza do kolumny Poprzedni */
  $('#woda-nast').addEventListener('click',function(){
-  var b=this,stare=OKRES.odczyt;LOKALE.forEach(function(l){if(!l.tylkoG){l.poprz=l.obecny;l.obecny=null}});
-  OKRES.odczytPoprz=stare;OKRES.odczyt='2026-12-01';
-  b.disabled=true;zapiszWode();przelicz(false);
+  var stare=OKRES.odczyt;
+  if(!OKRES.zapisano&&!confirm('Odczyt z '+data(stare)+' nie jest zapisany. Mimo to przejść do następnego odczytu?'))return;
+  LOKALE.forEach(function(l){if(!l.tylkoG){l.poprz=l.obecny;l.obecny=null}});
+  OKRES.odczytPoprz=stare;OKRES.odczyt=nastOdczyt();OKRES.zapisano=null;
+  zapiszWode();przelicz(false);stanWody();
   $('#woda-info').textContent='Stany z '+data(stare)+' przeszły do kolumny Poprzedni. Wystarczy wpisać nowe stany obecne (albo wczytać plik z odczytem zdalnym).';
  });
- if(OKRES.odczyt==='2026-12-01')$('#woda-nast').disabled=true;
+ $('#woda-zapisz').addEventListener('click',zatwierdzWode);$('#woda-zapisz2').addEventListener('click',zatwierdzWode);
+ var fc=$('#form-cykl');
+ fc.addEventListener('submit',function(e){e.preventDefault()});
+ fc.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.name==='cykl'){OKRES.cykl=+t.value;OKRES.odczytPoprz=dodajMies(OKRES.odczyt,-OKRES.cykl);$('#woda-info').textContent=OKRES.cykl==2?'Odczyty co 2 miesiące: 1 stycznia, 1 marca, 1 maja, 1 lipca, 1 września, 1 listopada.':'Odczyty co miesiąc: zawsze 1. dnia miesiąca.'}
+  else if(t.name==='ob'&&t.value){OKRES.odczyt=t.value}
+  else if(t.name==='pop'&&t.value){OKRES.odczytPoprz=t.value}
+  OKRES.zapisano=null;zapiszWode();rysujWode();stanWody();
+ });
  $('#woda-czysc').addEventListener('click',function(){
-  LOKALE.forEach(function(l){if(!l.tylkoG){l.poprz=null;l.obecny=null}});zapiszWode();przelicz(false);
+  LOKALE.forEach(function(l){if(!l.tylkoG){l.poprz=null;l.obecny=null}});OKRES.zapisano=null;zapiszWode();przelicz(false);stanWody();
   $('#woda-info').textContent='Stany wyczyszczone. Wpisz stan poprzedni i obecny dla każdego lokalu.';
   var p=$('#woda-tab input');if(p)p.focus();
  });
@@ -422,11 +470,11 @@ function admin(){
  f.addEventListener('submit',function(e){
   e.preventDefault();
   var mi=+f.mies.value;OKRES.mies=mi;var mm=('0'+mi).slice(-2),pm=('0'+(mi===1?12:mi-1)).slice(-2);
-  OKRES.wyst=f.wyst.value;OKRES.platnosc=f.plat.value;OKRES.odsetkiOd=f.ods.value;OKRES.odczyt='2026-'+mm+'-01';OKRES.odczytPoprz='2026-'+pm+'-01';
+  OKRES.wyst=f.wyst.value;OKRES.platnosc=f.plat.value;OKRES.odsetkiOd=f.ods.value;OKRES.bezWody=!f.woda.checked;
   OKRES.roczna=f.roczna.checked;OKRES.celowe=parseFloat(String(f.celowe.value).replace(',','.'))||0;
   var s=0,rows=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;return '<tr><td>'+l.bud+'</td><td><b>'+l.nr+'</b></td><td class="l">'+zl(n.suma)+'</td><td><button type="button" class="link" data-pokaz="'+i+'">Pokaż notę</button></td></tr>'}).join('');
   $('#noty-wynik').hidden=false;
-  $('#noty-podsum').textContent='Wygenerowano 29 not za '+MIES[mi-1]+' 2026. Suma należności: '+zl(s)+' zł. Właściciele zobaczą swoje noty po zalogowaniu.';
+  $('#noty-podsum').textContent='Wygenerowano 29 not za '+MIES[mi-1]+' 2026'+(OKRES.bezWody?' (bez wody, w tym miesiącu nie było odczytu)':', woda z odczytu '+data(OKRES.odczyt))+'. Suma należności: '+zl(s)+' zł. Właściciele zobaczą swoje noty po zalogowaniu.';
   $('#noty-tab tbody').innerHTML=rows;$('#noty-jedna').innerHTML='';
   przelicz(false);
   $('#noty-podsum').focus();
@@ -444,10 +492,11 @@ function admin(){
   $('#k-dni').textContent=dni;$('#k-ods').textContent=zl(o)+' zł';$('#k-raz').textContent=zl(kw+o)+' zł';
   $('#k-wzor').textContent=dni?zl(kw)+' zł × '+liczba(st,2)+'% × '+dni+' dni / 365 = '+zl(o)+' zł. Odsetki liczone od dnia po terminie płatności do dnia zapłaty włącznie.':'Zapłata w terminie, odsetki nie przysługują.';
  }
+ f.mies.addEventListener('change',function(){var mi=+f.mies.value;f.woda.checked=!(OKRES.cykl==2&&mi%2===0)});
  fk.addEventListener('input',kalk);fk.addEventListener('submit',function(e){e.preventDefault()});kalk();
  /* nowe haslo dla lokalu */
  $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.parentNode.innerHTML='<b class="ok">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+' (blok '+l.bud+'): nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
- przelicz(false);
+ przelicz(false);stanWody();
 }
 
 var pg=document.body.dataset.page;

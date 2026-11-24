@@ -179,12 +179,12 @@ var LOKALE=[];
 /* lokal demo mieszkanca: B1 w bloku 61 (mieszkanie i garaz) */
 var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{poprz:405,obecny:412});
 
-var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-10-01',roczna:true,celowe:0};
+var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-09-01',cykl:2,roczna:true,celowe:0};
 
 /* stany wodomierzy zapisane w panelu Zarzadu (w tej przegladarce) */
 var WODA_KLUCZ='wmk61-wodomierze';
 function zuzycie(l){if(l.tylkoG||l.poprz==null||l.obecny==null)return 0;var w=l.obecny-l.poprz;return w>0?Math.round(w*1000)/1000:0}
-(function(){try{var z=JSON.parse(localStorage.getItem(WODA_KLUCZ)||'null');if(!z||!z.stany)return;LOKALE.forEach(function(l){var s=z.stany[l.bud+'/'+l.nr];if(s){l.poprz=s[0];l.obecny=s[1]}});if(z.odczyt){OKRES.odczyt=z.odczyt;OKRES.odczytPoprz=z.odczytPoprz}}catch(e){}})();
+(function(){try{var z=JSON.parse(localStorage.getItem(WODA_KLUCZ)||'null');if(!z||!z.stany)return;LOKALE.forEach(function(l){var s=z.stany[l.bud+'/'+l.nr];if(s){l.poprz=s[0];l.obecny=s[1]}});if(z.odczyt){OKRES.odczyt=z.odczyt;OKRES.odczytPoprz=z.odczytPoprz}if(z.cykl)OKRES.cykl=z.cykl;else if(z.odczyt==='2026-11-01'&&z.odczytPoprz==='2026-10-01')OKRES.odczytPoprz='2026-09-01';OKRES.zapisano=z.zapisano||null}catch(e){}})();
 
 function nota(l,ok,ceny){
  ceny=ceny||CENY;ok=ok||OKRES;
@@ -197,7 +197,7 @@ function nota(l,ok,ceny){
    l.gar.forEach(function(g){rows.push({n:c.nazwa+(g.miejsce?', miejsce nr '+g.miejsce:''),m:c.miara,c:c.cena,il:g.m2,ild:2,v:r2(g.m2*c.cena)})});
   }
   else if(c.typ==='osoby'){r.il=l.os;r.ild=0;r.v=r2(l.os*c.cena);r.brak=l.tylkoG;rows.push(r)}
-  else if(c.typ==='woda'){r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}
+  else if(c.typ==='woda'){if(ok.bezWody){r.n+=' (bez odczytu w tym miesiącu)';r.il=0;r.m3=true;r.v=0;r.brak=l.tylkoG;rows.push(r)}else{r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}}
   else if(c.typ==='roczna'){delete r.c;r.v=(ok.roczna&&!l.tylkoG)?r2(c.cena):0;rows.push(r)}
   else{delete r.c;r.v=r2(c.cena);rows.push(r)}
  });
