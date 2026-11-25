@@ -30,7 +30,7 @@ var LOKALE=[];
 ['61','61A'].forEach(function(b){SPIS[b].forEach(function(s){
  var gar=[];for(var k=0;k<s[2];k++)gar.push({m2:GAR_M2,miejsce:''});
  var tylkoG=!s[1],poprz=Math.round(180+rnd()*420),zuz=Math.round(3+rnd()*9),os=(rnd(),s[3]);
- LOKALE.push({nr:s[0],bud:b,m2:s[1],gar:gar,tylkoG:tylkoG,os:tylkoG?0:os,poprz:tylkoG?0:poprz,obecny:tylkoG?0:poprz+zuz,odsetki:0,celowe:0,inne:0,niedop:0,nadp:0,doRozl:0,uwagi:'',wlasc:''});
+ LOKALE.push({nr:s[0],bud:b,m2:s[1],gar:gar,tylkoG:tylkoG,os:tylkoG?0:os,poprz:tylkoG?0:poprz,obecny:tylkoG?0:poprz+zuz,odsetki:0,celowe:0,inne:0,niedop:0,nadp:0,doRozl:0,uwagi:'',wlasc:'',wodaZero:false});
 })});
 /* lokal demo mieszkanca: B1 w bloku 61 (mieszkanie i garaz) */
 var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{poprz:405,obecny:412});
@@ -45,7 +45,7 @@ function zuzycie(l){if(l.tylkoG||l.poprz==null||l.obecny==null)return 0;var w=l.
 /* dane lokali zmieniane przez Zarzad (numery miejsc w garazu, wlasciciel, osoby, odsetki, wplaty, uwagi)
    i historia zmian w E-Kartotekach; w podgladzie zapis w tej przegladarce, docelowo w bazie na serwerze */
 var LOK_KLUCZ='wmk61-lokale',ZMIANY_KLUCZ='wmk61-kartoteka-zmiany',LOG_KLUCZ='wmk61-logowania';
-var POLA_KART=['wlasc','os','odsetki','celowe','inne','niedop','nadp','uwagi'];
+var POLA_KART=['wlasc','os','odsetki','celowe','inne','niedop','nadp','wodaZero','uwagi'];
 function klucz(l){return l.bud+'/'+l.nr}
 function login(l){return l.bud+'-'+l.nr}
 function czytajJSON(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
@@ -67,7 +67,7 @@ function nota(l,ok,ceny){
    l.gar.forEach(function(g){rows.push({n:c.nazwa+(g.miejsce?', miejsce nr '+g.miejsce:''),m:c.miara,c:c.cena,il:g.m2,ild:2,v:r2(g.m2*c.cena)})});
   }
   else if(c.typ==='osoby'){r.il=l.os;r.ild=0;r.v=r2(l.os*c.cena);r.brak=l.tylkoG;rows.push(r)}
-  else if(c.typ==='woda'){if(ok.bezWody){r.n+=' (bez odczytu w tym miesiącu)';r.il=0;r.m3=true;r.v=0;r.brak=l.tylkoG;rows.push(r)}else{r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}}
+  else if(c.typ==='woda'){if(ok.bezWody){r.n+=' (bez odczytu w tym miesiącu)';r.il=0;r.m3=true;r.v=0;r.brak=l.tylkoG;rows.push(r)}else if(l.wodaZero&&!l.tylkoG){r.n+=' (opłacona, wyzerowana przez Zarząd)';r.il=w;r.m3=true;r.v=0;rows.push(r)}else{r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}}
   else if(c.typ==='roczna'){var dl=c.dolicz===undefined?ok.roczna:c.dolicz;if(!dl)return;delete r.c;r.m='zł';r.v=l.tylkoG?0:r2(c.cena);rows.push(r)}
   else{delete r.c;r.v=r2(c.cena);rows.push(r)}
  });
@@ -117,7 +117,7 @@ function historia(l){
  return hist.map(function(h,ix){
   var mm=('0'+h.m).slice(-2),pm=('0'+(h.m-1)).slice(-2);
   if(ix===0)return {m:h.m,n:nota(l),opis:'bieżąca, termin '+data(OKRES.platnosc)};
-  var x=Object.assign({},l,{obecny:stan,poprz:stan-h.z,odsetki:h.ods||0,celowe:h.cel||0,inne:0,niedop:0,nadp:0,uwagi:h.cel?'Wpłata celowa zgodnie z Uchwałą nr 3/2026.':''});stan-=h.z;
+  var x=Object.assign({},l,{obecny:stan,poprz:stan-h.z,odsetki:h.ods||0,celowe:h.cel||0,inne:0,niedop:0,nadp:0,wodaZero:false,uwagi:h.cel?'Wpłata celowa zgodnie z Uchwałą nr 3/2026.':''});stan-=h.z;
   var ok={rok:2026,mies:h.m,wyst:'2026-'+mm+'-01',platnosc:'2026-'+mm+'-10',odsetkiOd:'2026-'+mm+'-12',odczyt:'2026-'+mm+'-01',odczytPoprz:'2026-'+pm+'-01',roczna:false,celowe:0};
   return {m:h.m,n:nota(x,ok,cenyH),opis:'rozliczona'};
  });
@@ -143,6 +143,12 @@ function strefa(){
  var log=$('#logowanie'),app=$('#app');
  function wejdz(e){
   e&&e.preventDefault();
+  var wl=e&&e.type==='submit'?$('#login').value.trim():'';
+  if(wl&&!LOKALE.some(function(l){return login(l).toLowerCase()===wl.toLowerCase()})){
+   var LZ=czytajJSON(LOG_KLUCZ,[]);if(!Array.isArray(LZ))LZ=[];var u2=navigator.userAgent;
+   LZ.unshift({t:Date.now(),konto:'?',wpis:wl.slice(0,30),ip:null,urz:(/iPhone|iPad/.test(u2)?'iPhone/iPad':/Android/.test(u2)?'Telefon, Android':/Windows/.test(u2)?'Komputer, Windows':/Mac/.test(u2)?'Komputer, Mac':'Inne'),ok:false});piszJSON(LOG_KLUCZ,LZ.slice(0,200));
+   var bl=$('#log-blad');if(bl){bl.hidden=false;bl.textContent='Nieprawidłowy login lub hasło. Ta próba zapisała się w Dzienniku logowań w Panelu Zarządu. W podglądzie można wejść przyciskiem poniżej.'}
+   return}
   /* dziennik logowan: w podgladzie bez adresu IP (docelowo zapisuje go serwer) */
   var L=czytajJSON(LOG_KLUCZ,[]);if(!Array.isArray(L))L=[];
   var ua=navigator.userAgent,urz=(/iPhone|iPad/.test(ua)?'iPhone/iPad':/Android/.test(ua)?'Telefon, Android':/Windows/.test(ua)?'Komputer, Windows':/Mac/.test(ua)?'Komputer, Mac':'Inne')+(/Edg\//.test(ua)?', Edge':/Firefox/.test(ua)?', Firefox':/Chrome/.test(ua)?', Chrome':/Safari/.test(ua)?', Safari':'');
@@ -207,28 +213,32 @@ function admin(){
  }
  /* E-Kartoteka lokalu rozwijana po kliknieciu wiersza: nota, historia not, edycja przez Zarzad, historia zmian */
  var OTW={},HSEL={},KOM={};
- var ETYK={wlasc:'Właściciel',os:'Liczba osób',odsetki:'Odsetki za nieterminowe wpłaty',celowe:'Wpłaty celowe z Uchwały',inne:'Wpłaty inne',niedop:'Niedopłata',nadp:'Nadpłata',uwagi:'Uwagi do Noty'};
+ var ETYK={wlasc:'Właściciel',os:'Liczba osób',odsetki:'Odsetki za nieterminowe wpłaty',celowe:'Wpłaty celowe z Uchwały',inne:'Wpłaty inne',niedop:'Niedopłata',nadp:'Nadpłata',wodaZero:'Woda w bieżącej nocie 0 zł',uwagi:'Uwagi do Noty'};
  var KWOTY=['odsetki','celowe','inne','niedop','nadp'];
- function wart(p,v){return KWOTY.indexOf(p)>=0?zl(+v||0)+' zł':(v===''||v==null?'(puste)':String(v))}
+ function wart(p,v){if(p==='wodaZero')return v?'tak':'nie';return KWOTY.indexOf(p)>=0?zl(+v||0)+' zł':(v===''||v==null?'(puste)':String(v))}
  function zmianyLok(l){var Z=czytajJSON(ZMIANY_KLUCZ,[]);if(!Array.isArray(Z))return [];return Z.filter(function(z){return z.lok===klucz(l)})}
+ function ostatnieLog(l){var k=login(l),W=czytajJSON(LOG_KLUCZ,[]);if(!Array.isArray(W))W=[];var L=W.concat(typeof LOGP!=='undefined'&&LOGP?LOGP:[]),t=0;L.forEach(function(x){if(x.konto===k&&x.ok&&x.t>t)t=x.t});return t}
+ function ostatnieTxt(l){if(l.tylkoG)return '';var t=ostatnieLog(l);return t?'ostatnie logowanie: '+godz(t):'jeszcze się nie logował'}
+ function ostatnieKr(l){var t=ostatnieLog(l);if(!t)return 'jeszcze się nie logował';var d=new Date(t);return 'ostatnie logowanie:<br>'+godz(t).replace(', godz.',',')}
  function kartHTML(l,i){
   var H=historia(l),sel=HSEL[i]||0,n=H[sel]?H[sel].n:H[0].n,Z=zmianyLok(l);
   var pole=function(p,typ,extra){var v=l[p];return '<div class="pole"><label for="kf-'+p+'-'+i+'">'+ETYK[p]+(KWOTY.indexOf(p)>=0?' (zł)':'')+'</label>'+(typ==='area'?'<textarea id="kf-'+p+'-'+i+'" name="'+p+'" rows="2">'+esc(v)+'</textarea>':'<input id="kf-'+p+'-'+i+'" name="'+p+'" '+(typ==='txt'?'type="text" maxlength="80"':'type="text" inputmode="decimal" autocomplete="off"')+' value="'+(KWOTY.indexOf(p)>=0?(+v||0).toFixed(2).replace('.',','):esc(v))+'"'+(extra||'')+'>')+'</div>'};
-  var t='<div class="kart-det"><div class="kart-gl"><h3>E-Kartoteka: lokal '+l.nr+', blok '+l.bud+'</h3><p>Tak samo widzi ją właściciel po zalogowaniu do Strefy mieszkańca.</p><button type="button" class="link" data-zwin="'+i+'">Zwiń</button></div>';
+  var t='<div class="kart-det"><div class="kart-gl"><h3>E-Kartoteka: lokal '+l.nr+', blok '+l.bud+'</h3><p>Tak samo widzi ją właściciel po zalogowaniu do Strefy mieszkańca.'+(l.tylkoG?'':' Właściciel: '+ostatnieTxt(l)+'.')+'</p><button type="button" class="link" data-zwin="'+i+'">Zwiń</button></div>';
   t+='<div class="kart-uklad"><div class="kart-nota">'+notaHTML(n,{mala:true})+'</div><div class="kart-bok">';
-  t+='<h4>Historia not</h4><ul class="kart-hist">'+histListaHTML(H,sel,'data-kh="'+i+'" data-kix')+'</ul>';
-  t+='<form class="kart-form" data-kf="'+i+'"><h4>Zmień dane w E-Kartotece</h4><p class="uwaga">Zmiany dotyczą bieżącej noty za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'. Noty z historii zostają bez zmian.</p>';
+  t+='<form class="kart-form" id="kf-'+i+'" data-kf="'+i+'"><h4>Zmień dane w E-Kartotece</h4><p class="uwaga">Zmiany dotyczą bieżącej noty za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'. Noty z historii zostają bez zmian.</p>';
   t+=pole('wlasc','txt',' placeholder="'+esc(wlascTxt(l))+'"');
   if(!l.tylkoG)t+=pole('os','num');
   t+='<div class="kart-2">'+pole('odsetki')+pole('celowe')+pole('inne')+pole('niedop')+pole('nadp')+'</div>';
+  if(!l.tylkoG)t+='<label class="chk kart-chk"><input type="checkbox" name="wodaZero"'+(l.wodaZero?' checked':'')+'> <span>Woda w bieżącej nocie 0 zł (np. woda już opłacona przez właściciela)</span></label>';
   t+=pole('uwagi','area');
   t+='<button class="btn" type="submit">Zapisz zmiany</button><p class="info" aria-live="polite">'+(KOM[i]||'')+'</p></form>';
+  t+='<h4 class="kart-h">Historia not</h4><ul class="kart-hist">'+histListaHTML(H,sel,'data-kh="'+i+'" data-kix')+'</ul>';
   t+='<h4>Historia zmian</h4>'+(Z.length?'<ul class="kart-zm">'+Z.slice(0,30).map(function(z){return '<li><time>'+godz(z.t)+'</time> '+esc(z.kto)+': '+esc(z.co)+'</li>'}).join('')+'</ul>':'<p class="uwaga">Brak zmian wprowadzonych przez Zarząd.</p>');
   t+='</div></div></div>';
   return t;
  }
  function rysujLokale(){
-  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;var o=!!OTW[i];return '<tr class="wiersz'+(l===DEMO?' demo':'')+(o?' otw':'')+'" data-lok="'+i+'"><td><button type="button" class="rozw" data-rozw="'+i+'" aria-expanded="'+o+'" aria-controls="kart-'+i+'" aria-label="E-Kartoteka lokalu '+l.nr+' blok '+l.bud+'"><span aria-hidden="true">'+(o?'▾':'▸')+'</span></button> '+l.bud+'</td><td><b>'+l.nr+'</b></td><td>'+esc(wlascTxt(l))+'</td><td class="l">'+(l.m2?liczba(l.m2,2):'-')+'</td><td>'+garHTML(l,i)+'</td><td class="l">'+(l.tylkoG?'-':l.os)+'</td><td class="l">'+zl(n.suma)+'</td><td><span class="ok">aktywne</span> <button type="button" class="link" data-haslo="'+i+'">Nowe hasło</button></td></tr>'+(o?'<tr class="det" id="kart-'+i+'"><td colspan="8">'+kartHTML(l,i)+'</td></tr>':'')}).join('');
+  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;var o=!!OTW[i];return '<tr class="wiersz'+(l===DEMO?' demo':'')+(o?' otw':'')+'" data-lok="'+i+'"><td><button type="button" class="rozw" data-rozw="'+i+'" aria-expanded="'+o+'" aria-controls="kart-'+i+'" aria-label="E-Kartoteka lokalu '+l.nr+' blok '+l.bud+'"><span aria-hidden="true">'+(o?'▾':'▸')+'</span></button> '+l.bud+'</td><td><b>'+l.nr+'</b></td><td>'+esc(wlascTxt(l))+'</td><td class="l">'+(l.m2?liczba(l.m2,2):'-')+'</td><td>'+garHTML(l,i)+'</td><td class="l">'+(l.tylkoG?'-':l.os)+'</td><td class="l">'+zl(n.suma)+'</td><td><span class="ok">aktywne</span>'+(l.tylkoG?'':'<small class="ost-log">'+ostatnieKr(l)+'</small>')+'<button type="button" class="link" data-edytuj="'+i+'">Zmień dane</button><button type="button" class="link" data-haslo="'+i+'">Nowe hasło</button></td></tr>'+(o?'<tr class="det" id="kart-'+i+'"><td colspan="8">'+kartHTML(l,i)+'</td></tr>':'')}).join('');
   $('#lokale-suma').textContent=zl(s)+' zł';
  }
  function odswiezKarte(i){var r=$('#kart-'+i+' .kart-nota');if(!r)return;var H=historia(LOKALE[i]);r.innerHTML=notaHTML(H[HSEL[i]||0].n,{mala:true})}
@@ -240,6 +250,7 @@ function admin(){
   var zw=t.closest('[data-zwin]');if(zw){var iz=+zw.dataset.zwin;delete OTW[iz];rysujLokale();var bz=$('[data-rozw="'+iz+'"]');if(bz)bz.focus();return}
   var kh=t.closest('[data-kix]');if(kh){var ik=+kh.dataset.kh;HSEL[ik]=+kh.dataset.kix;$$('#kart-'+ik+' .kart-hist button').forEach(function(x){x.classList.toggle('akt',x===kh)});odswiezKarte(ik);return}
   if(t.closest('.det'))return;
+  var ed=t.closest('[data-edytuj]');if(ed){var ie=+ed.dataset.edytuj;OTW[ie]=true;rysujLokale();var fe=$('#kf-'+ie);if(fe){fe.scrollIntoView({behavior:'smooth',block:'start'});var pe=fe.querySelector('input');if(pe)pe.focus({preventScroll:true})}return}
   if(t.closest('input,label,a,[data-haslo]'))return;
   var w=t.closest('tr.wiersz');if(!w)return;
   var i=+w.dataset.lok;if(OTW[i])delete OTW[i];else OTW[i]=true;rysujLokale();
@@ -249,7 +260,7 @@ function admin(){
   var f=e.target.closest('[data-kf]');if(!f)return;e.preventDefault();
   var i=+f.dataset.kf,l=LOKALE[i],nowe={},bledy=[];
   POLA_KART.forEach(function(p){
-   var el=f.elements[p];if(!el)return;var v=el.value;
+   var el=f.elements[p];if(!el)return;if(p==='wodaZero'){nowe[p]=!!el.checked;return}var v=el.value;
    if(KWOTY.indexOf(p)>=0){v=String(v).replace(/\s/g,'').replace(',','.');if(v==='')v='0';if(!/^\d+(\.\d{1,2})?$/.test(v)){bledy.push(ETYK[p]);return}nowe[p]=r2(parseFloat(v))}
    else if(p==='os'){v=String(v).trim();if(!/^\d{1,2}$/.test(v)){bledy.push(ETYK[p]);return}nowe[p]=+v}
    else nowe[p]=String(v).trim();
@@ -381,16 +392,18 @@ function admin(){
  var IPS=['83.27.141.92','89.64.12.207','178.36.201.18','31.0.124.66','188.146.92.31','37.47.210.5','5.173.40.112','46.205.198.77','83.11.250.140','91.150.177.23'];
  var URZ=['Telefon, Android, Chrome','Komputer, Windows, Edge','Komputer, Windows, Chrome','iPhone, Safari','Tablet, Android, Chrome','Komputer, Mac, Safari'];
  var LOGP=(function(){var s=11,r=function(){s=(s*16807)%2147483647;return (s-1)/2147483646},out=[],t=Date.now()-25*6e4,kont=LOKALE.filter(function(l){return !l.tylkoG});
-  for(var k=0;k<34;k++){var zarz=r()<.18,l=kont[Math.floor(r()*kont.length)],ix=Math.floor(r()*IPS.length);out.push({t:t,konto:zarz?'zarzad':login(l),ip:IPS[zarz?0:ix],urz:URZ[zarz?1:Math.floor(r()*URZ.length)],ok:r()>.12});t-=Math.round((2+r()*20)*36e5)}return out})();
- function kontoTxt(k){if(k==='zarzad')return 'Zarząd (admin)';var p=k.split('-');return 'Lokal '+p[1]+', blok '+p[0]}
+  for(var k=0;k<34;k++){var zarz=r()<.18,l=kont[Math.floor(r()*kont.length)],ix=Math.floor(r()*IPS.length);out.push({t:t,konto:zarz?'zarzad':login(l),ip:IPS[zarz?0:ix],urz:URZ[zarz?1:Math.floor(r()*URZ.length)],ok:r()>.12});t-=Math.round((2+r()*20)*36e5)}
+  [[20,'61-A9','31.0.124.66','Telefon, Android, Chrome'],[9,'kilinskiego61','185.220.101.7','Komputer, Windows, Chrome'],[3,'admin','45.141.84.12','Komputer, Linux, Firefox']].forEach(function(o){var x=out[o[0]];out.splice(o[0],0,{t:x.t+9e5,konto:'?',wpis:o[1],ip:o[2],urz:o[3],ok:false})});
+  return out})();
+ function kontoTxt(k,x){if(k==='zarzad')return 'Zarząd (admin)';if(k==='?')return 'nieznany login „'+esc(x&&x.wpis||'')+'”';var p=k.split('-');return 'Lokal '+p[1]+', blok '+p[0]}
  var flog=$('#form-logf');
  if(flog){
-  flog.konto.innerHTML='<option value="">wszystkie konta</option><option value="zarzad">Zarząd (admin)</option>'+LOKALE.filter(function(l){return !l.tylkoG}).map(function(l){return '<option value="'+login(l)+'">Lokal '+l.nr+', blok '+l.bud+'</option>'}).join('');
+  flog.konto.innerHTML='<option value="">wszystkie konta</option><option value="zarzad">Zarząd (admin)</option><option value="?">nieznane loginy (obce próby)</option>'+LOKALE.filter(function(l){return !l.tylkoG}).map(function(l){return '<option value="'+login(l)+'">Lokal '+l.nr+', blok '+l.bud+'</option>'}).join('');
   var rysujLog=function(){
    var W=czytajJSON(LOG_KLUCZ,[]);if(!Array.isArray(W))W=[];
    var L=W.map(function(x){return Object.assign({wl:true},x)}).concat(LOGP),fk=flog.konto.value,fw=flog.wynik.value;
    L=L.filter(function(x){return (!fk||x.konto===fk)&&(!fw||(fw==='ok')===!!x.ok)});
-   $('#log-tab tbody').innerHTML=L.length?L.map(function(x){return '<tr><td data-l="Data i godzina">'+godz(x.t)+'</td><td data-l="Konto">'+kontoTxt(x.konto)+'</td><td data-l="Adres IP">'+(x.ip?x.ip:'<span class="w-brak">podgląd bez serwera</span>')+'</td><td data-l="Urządzenie">'+esc(x.urz||'')+'</td><td data-l="Wynik">'+(x.ok?'<span class="ok">udane</span>':'<span class="w-zle">nieudane (błędne hasło)</span>')+'</td></tr>'}).join(''):'<tr><td colspan="5">Brak logowań dla wybranych filtrów.</td></tr>';
+   $('#log-tab tbody').innerHTML=L.length?L.map(function(x){return '<tr><td data-l="Data i godzina">'+godz(x.t)+'</td><td data-l="Konto">'+kontoTxt(x.konto,x)+'</td><td data-l="Adres IP">'+(x.ip?x.ip:'<span class="w-brak">podgląd bez serwera</span>')+'</td><td data-l="Urządzenie">'+esc(x.urz||'')+'</td><td data-l="Wynik">'+(x.ok?'<span class="ok">udane</span>':'<span class="w-zle">nieudane ('+(x.konto==='?'?'nie ma takiego konta':'błędne hasło')+')</span>')+'</td></tr>'}).join(''):'<tr><td colspan="5">Brak logowań dla wybranych filtrów.</td></tr>';
    $('#log-ile').textContent='Wpisów: '+L.length+'.';
   };
   flog.addEventListener('change',rysujLog);flog.addEventListener('submit',function(e){e.preventDefault()});
