@@ -219,7 +219,7 @@ function admin(){
  function zmianyLok(l){var Z=czytajJSON(ZMIANY_KLUCZ,[]);if(!Array.isArray(Z))return [];return Z.filter(function(z){return z.lok===klucz(l)})}
  function ostatnieLog(l){var k=login(l),W=czytajJSON(LOG_KLUCZ,[]);if(!Array.isArray(W))W=[];var L=W.concat(typeof LOGP!=='undefined'&&LOGP?LOGP:[]),t=0;L.forEach(function(x){if(x.konto===k&&x.ok&&x.t>t)t=x.t});return t}
  function ostatnieTxt(l){if(l.tylkoG)return '';var t=ostatnieLog(l);return t?'ostatnie logowanie: '+godz(t):'jeszcze się nie logował'}
- function ostatnieKr(l){var t=ostatnieLog(l);if(!t)return 'jeszcze się nie logował';var d=new Date(t);return 'ostatnie logowanie:<br>'+godz(t).replace(', godz.',',')}
+ function ostatnieKr(l){var t=ostatnieLog(l);if(!t)return 'jeszcze się nie logował';var d=new Date(t);return 'ostatnie logowanie: <br>'+godz(t).replace(', godz.',',')}
  function kartHTML(l,i){
   var H=historia(l),sel=HSEL[i]||0,n=H[sel]?H[sel].n:H[0].n,Z=zmianyLok(l);
   var pole=function(p,typ,extra){var v=l[p];return '<div class="pole"><label for="kf-'+p+'-'+i+'">'+ETYK[p]+(KWOTY.indexOf(p)>=0?' (zł)':'')+'</label>'+(typ==='area'?'<textarea id="kf-'+p+'-'+i+'" name="'+p+'" rows="2">'+esc(v)+'</textarea>':'<input id="kf-'+p+'-'+i+'" name="'+p+'" '+(typ==='txt'?'type="text" maxlength="80"':'type="text" inputmode="decimal" autocomplete="off"')+' value="'+(KWOTY.indexOf(p)>=0?(+v||0).toFixed(2).replace('.',','):esc(v))+'"'+(extra||'')+'>')+'</div>'};
@@ -238,7 +238,7 @@ function admin(){
   return t;
  }
  function rysujLokale(){
-  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;var o=!!OTW[i];return '<tr class="wiersz'+(l===DEMO?' demo':'')+(o?' otw':'')+'" data-lok="'+i+'"><td><button type="button" class="rozw" data-rozw="'+i+'" aria-expanded="'+o+'" aria-controls="kart-'+i+'" aria-label="E-Kartoteka lokalu '+l.nr+' blok '+l.bud+'"><span aria-hidden="true">'+(o?'▾':'▸')+'</span></button> '+l.bud+'</td><td><b>'+l.nr+'</b></td><td>'+esc(wlascTxt(l))+'</td><td class="l">'+(l.m2?liczba(l.m2,2):'-')+'</td><td>'+garHTML(l,i)+'</td><td class="l">'+(l.tylkoG?'-':l.os)+'</td><td class="l">'+zl(n.suma)+'</td><td><span class="ok">aktywne</span>'+(l.tylkoG?'':'<small class="ost-log">'+ostatnieKr(l)+'</small>')+'<button type="button" class="link" data-edytuj="'+i+'">Zmień dane</button><button type="button" class="link" data-haslo="'+i+'">Nowe hasło</button></td></tr>'+(o?'<tr class="det" id="kart-'+i+'"><td colspan="8">'+kartHTML(l,i)+'</td></tr>':'')}).join('');
+  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;var o=!!OTW[i];return '<tr class="wiersz'+(l===DEMO?' demo':'')+(o?' otw':'')+'" data-lok="'+i+'"><td><button type="button" class="rozw" data-rozw="'+i+'" aria-expanded="'+o+'" aria-controls="kart-'+i+'" aria-label="E-Kartoteka lokalu '+l.nr+' blok '+l.bud+'"><span aria-hidden="true">'+(o?'▾':'▸')+'</span></button> '+l.bud+'</td><td class="c-lok"><b>'+l.nr+'</b></td><td class="c-wl">'+esc(wlascTxt(l))+'</td><td class="l c-m2" data-l="m²">'+(l.m2?liczba(l.m2,2):'-')+'</td><td class="c-gar" data-l="garaż m² / nr">'+garHTML(l,i)+'</td><td class="l c-os" data-l="osoby">'+(l.tylkoG?'-':l.os)+'</td><td class="l c-nota" data-l="nota">'+zl(n.suma)+'</td><td class="c-konto"><span class="ok">aktywne</span>'+(l.tylkoG?'':'<small class="ost-log">'+ostatnieKr(l)+'</small>')+'<button type="button" class="link" data-edytuj="'+i+'">Zmień dane</button><button type="button" class="link" data-haslo="'+i+'">Nowe hasło</button></td></tr>'+(o?'<tr class="det" id="kart-'+i+'"><td colspan="8">'+kartHTML(l,i)+'</td></tr>':'')}).join('');
   $('#lokale-suma').textContent=zl(s)+' zł';
  }
  function odswiezKarte(i){var r=$('#kart-'+i+' .kart-nota');if(!r)return;var H=historia(LOKALE[i]);r.innerHTML=notaHTML(H[HSEL[i]||0].n,{mala:true})}
@@ -387,7 +387,7 @@ function admin(){
  f.mies.addEventListener('change',function(){var mi=+f.mies.value;f.woda.checked=!(OKRES.cykl==2&&mi%2===0)});
  fk.addEventListener('input',kalk);fk.addEventListener('submit',function(e){e.preventDefault()});kalk();
  /* nowe haslo dla lokalu */
- $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.parentNode.innerHTML='<b class="ok">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+' (blok '+l.bud+'): nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
+ $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.outerHTML='<b class="ok haslo-zm">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+' (blok '+l.bud+'): nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
  /* dziennik logowan: wpisy przykladowe + wejscia do demo Strefy w tej przegladarce */
  var IPS=['83.27.141.92','89.64.12.207','178.36.201.18','31.0.124.66','188.146.92.31','37.47.210.5','5.173.40.112','46.205.198.77','83.11.250.140','91.150.177.23'];
  var URZ=['Telefon, Android, Chrome','Komputer, Windows, Edge','Komputer, Windows, Chrome','iPhone, Safari','Tablet, Android, Chrome','Komputer, Mac, Safari'];
