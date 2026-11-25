@@ -189,7 +189,7 @@ function strefa(){
   var L=czytajJSON(LOG_KLUCZ,[]);if(!Array.isArray(L))L=[];
   var ua=navigator.userAgent,urz=(/iPhone|iPad/.test(ua)?'iPhone/iPad':/Android/.test(ua)?'Telefon, Android':/Windows/.test(ua)?'Komputer, Windows':/Mac/.test(ua)?'Komputer, Mac':'Inne')+(/Edg\//.test(ua)?', Edge':/Firefox/.test(ua)?', Firefox':/Chrome/.test(ua)?', Chrome':/Safari/.test(ua)?', Safari':'');
   L.unshift({t:Date.now(),konto:login(DEMO),ip:null,urz:urz,ok:true});piszJSON(LOG_KLUCZ,L.slice(0,200));
-  log.hidden=true;app.hidden=false;scrollTo(0,0);$('#app h2').focus()}
+  log.hidden=true;app.hidden=false;scrollTo(0,0);$('#app h2').focus();if(/^#(informacje|ogloszenia)$/.test(location.hash))pokaz('ogloszenia',true)}
  var lp=$('#app .lokal-pas p');if(lp)lp.textContent=DEMO.wlasc?DEMO.wlasc:'Właściciel lokalu B1 (dane przykładowe)';
  $('#form-log').addEventListener('submit',wejdz);$('#demo-wejdz').addEventListener('click',wejdz);
  $('#wyloguj').addEventListener('click',function(){app.hidden=true;log.hidden=false;scrollTo(0,0)});
