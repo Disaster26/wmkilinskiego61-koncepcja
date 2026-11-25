@@ -138,6 +138,37 @@ function zakladki(root){
  return pokaz;
 }
 
+
+/* ===== UCHWALY I GLOSOWANIE (wspolne dla Strefy i Panelu) =====
+   Udzialy w podgladzie z powierzchni lokali (mieszkanie + garaze); docelowo udzialy z listy Zarzadu.
+   Zapis w tej przegladarce, docelowo w bazie na serwerze. */
+var UCH_KLUCZ='wmk61-uchwaly';
+var GLOSY=['za','przeciw','wstrz'],GL_TXT={za:'za',przeciw:'przeciw',wstrz:'wstrzymuję się'},SP_TXT={strona:'przez stronę',osobiscie:'osobiście',mail:'mailem'};
+function pow(l){return (l.m2||0)+l.gar.length*GAR_M2}
+var POW_SUMA=LOKALE.reduce(function(s,l){return l.tylkoG?s:s+pow(l)},0);
+function udzial(l){return pow(l)/POW_SUMA}
+function uchStart(){
+ var u={tryb:'udzialy',lista:[
+  {id:'u1',nr:'1/2026',tytul:'w sprawie zatwierdzenia sprawozdania finansowego za 2025 rok',opis:'Treść uchwały i sprawozdanie w PDF.',do:'2026-11-30',koniec:null},
+  {id:'u2',nr:'2/2026',tytul:'w sprawie wysokości zaliczek na koszty zarządu nieruchomością wspólną',opis:'Treść uchwały w PDF.',do:'2026-11-30',koniec:null},
+  {id:'u3',nr:'3/2026',tytul:'w sprawie wpłaty celowej na naprawę nawierzchni',opis:'Treść uchwały w PDF.',do:'2026-03-12',koniec:'2026-03-12'}],glosy:{u1:{},u2:{},u3:{}}};
+ var s=11;function r(){s=(s*16807)%2147483647;return (s-1)/2147483646}
+ LOKALE.forEach(function(l){if(l.tylkoG||l===DEMO)return;
+  [['u1',.55],['u2',.4],['u3',.85]].forEach(function(p){if(r()<p[1]){var x=r(),g=x<.78?'za':x<.9?'przeciw':'wstrz',y=r();u.glosy[p[0]][klucz(l)]={g:g,sp:y<.6?'strona':y<.85?'osobiscie':'mail'}}})});
+ return u}
+var UCH=czytajJSON(UCH_KLUCZ,null);if(!UCH||!UCH.lista||!UCH.glosy)UCH=uchStart();
+function uchZapisz(){return piszJSON(UCH_KLUCZ,UCH)}
+function glosujacy(){return LOKALE.filter(function(l){return !l.tylkoG})}
+function wynik(u){
+ var g=UCH.glosy[u.id]||{},w={za:0,przeciw:0,wstrz:0},ile=0,tryb=UCH.tryb;
+ glosujacy().forEach(function(l){var v=g[klucz(l)];if(!v)return;ile++;w[v.g]+=tryb==='udzialy'?udzial(l):1});
+ var wsz=tryb==='udzialy'?1:glosujacy().length;
+ return {w:w,ile:ile,wsz:wsz,tryb:tryb,podjeta:w.za>wsz/2,razem:glosujacy().length}}
+function glosowTxt(n){return n===1?'głos':(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?'głosy':'głosów'}
+function wynikTxt(R){var f=function(k){return R.tryb==='udzialy'?liczba(R.w[k]*100,1)+'% udziałów':R.w[k]+' '+glosowTxt(R.w[k])};
+ return 'za: '+f('za')+', przeciw: '+f('przeciw')+', wstrzymało się: '+f('wstrz')}
+function pasekHTML(R){return '<div class="uch-pas" aria-hidden="true">'+GLOSY.map(function(k){var p=R.w[k]/R.wsz*100;return p>0?'<span class="p-'+k+'" style="width:'+p.toFixed(2)+'%"></span>':''}).join('')+'</div>'}
+
 /* ===== STREFA MIESZKANCA ===== */
 function strefa(){
  var log=$('#logowanie'),app=$('#app');
@@ -167,8 +198,15 @@ function strefa(){
  var hp=$('#historia-nota');hp.innerHTML=notaHTML(hist[0].n);
  lista.addEventListener('click',function(e){var b=e.target.closest('button[data-h]');if(!b)return;$$('button',lista).forEach(function(x){x.classList.toggle('akt',x===b)});hp.innerHTML=notaHTML(hist[+b.dataset.h].n);if(innerWidth<900)hp.scrollIntoView({behavior:'smooth',block:'start'})});
  $$('[data-druk]').forEach(function(b){b.addEventListener('click',function(){print()})});
- /* glosowanie demo */
- $$('.glos').forEach(function(g){g.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$$('button',g).forEach(function(x){x.setAttribute('aria-pressed',x===b)});var w=g.nextElementSibling;w.hidden=false;w.textContent='Zapisano odpowiedź: '+b.textContent.toLowerCase()+'. W podglądzie głos nie jest nigdzie wysyłany.'})});
+ /* uchwaly: glos lokalu demo zapisuje sie w tej przegladarce i widzi go Zarzad w Panelu */
+ var ul=$('#uch-lista');
+ function rysujUch(){ul.innerHTML=UCH.lista.map(function(u){
+  var moj=(UCH.glosy[u.id]||{})[klucz(DEMO)],h='<div class="uch"><span class="status'+(u.koniec?' zam':'')+'">'+(u.koniec?'Głosowanie zakończone '+data(u.koniec):'Głosowanie trwa do '+data(u.do))+'</span><h3>Uchwała nr '+esc(u.nr)+' '+esc(u.tytul)+'</h3><p>'+esc(u.opis||'')+'</p>';
+  if(u.koniec){var R=wynik(u);h+=pasekHTML(R)+'<p class="uch-wyn"><b>'+(R.podjeta?'Uchwała podjęta.':'Uchwała niepodjęta.')+'</b> Wynik: '+wynikTxt(R)+' ('+(R.tryb==='udzialy'?'liczone udziałami':'jeden lokal, jeden głos')+').'+(moj?' Głos Państwa lokalu: '+GL_TXT[moj.g]+'.':'')+'</p>'}
+  else{h+='<div class="glos" data-u="'+u.id+'">'+GLOSY.map(function(k){return '<button type="button" data-g="'+k+'" aria-pressed="'+!!(moj&&moj.g===k)+'">'+(k==='za'?'Za':k==='przeciw'?'Przeciw':'Wstrzymuję się')+'</button>'}).join('')+'</div><p class="glos-wynik"'+(moj?'':' hidden')+'>'+(moj?'Głos Państwa lokalu: '+GL_TXT[moj.g]+' ('+SP_TXT[moj.sp]+'). Do końca głosowania można go zmienić.':'')+'</p>'}
+  return h+'</div>'}).join('')}
+ rysujUch();
+ ul.addEventListener('click',function(e){var b=e.target.closest('.glos button');if(!b)return;var u=b.parentNode.dataset.u;UCH=czytajJSON(UCH_KLUCZ,UCH);UCH.glosy[u]=UCH.glosy[u]||{};UCH.glosy[u][klucz(DEMO)]={g:b.dataset.g,sp:'strona',t:Date.now()};uchZapisz();rysujUch()});
 }
 
 /* ===== PANEL ZARZADU ===== */
@@ -411,6 +449,33 @@ function admin(){
   rysujLog();
  }
  przelicz(false);stanWody();
+
+ /* ===== uchwaly i glosowanie (Zarzad) ===== */
+ (function(){
+  var box=$('#uch-adm'),fg=$('#form-glos'),fu=$('#form-uch'),inf=$('#uch-info');
+  if(!box)return;
+  function opcjeLok(){return glosujacy().map(function(l){return '<option value="'+klucz(l)+'">'+l.bud+' / '+l.nr+' ('+esc(wlascTxt(l))+')</option>'}).join('')}
+  function rysuj(otwarte){
+   $$('input[name="tryb"]').forEach(function(x){x.checked=x.value===UCH.tryb});
+   fg.uch.innerHTML=UCH.lista.filter(function(u){return !u.koniec}).map(function(u){return '<option value="'+u.id+'">Uchwała nr '+esc(u.nr)+'</option>'}).join('')||'<option value="">brak trwających głosowań</option>';
+   box.innerHTML=UCH.lista.map(function(u){
+    var R=wynik(u),g=UCH.glosy[u.id]||{},otw=otwarte===u.id;
+    var wiersze=glosujacy().map(function(l){var v=g[klucz(l)];return '<tr'+(v?'':' class="brak"')+'><td>'+l.bud+' / '+l.nr+'</td><td>'+esc(wlascTxt(l))+'</td><td class="l">'+liczba(udzial(l)*100,2)+'%</td><td>'+(v?'<b class="g-'+v.g+'">'+GL_TXT[v.g]+'</b>':'nie głosował')+'</td><td>'+(v?SP_TXT[v.sp]:'')+'</td><td>'+(v&&!u.koniec&&v.sp!=='strona'?'<button class="btn ramka mini" type="button" data-cofnij="'+u.id+'|'+klucz(l)+'">Usuń głos</button>':'')+'</td></tr>'}).join('');
+    return '<article class="uch uch-z"><span class="status'+(u.koniec?' zam':'')+'">'+(u.koniec?'Głosowanie zakończone '+data(u.koniec)+', wynik widzą właściciele w Strefie':'Głosowanie trwa do '+data(u.do))+'</span><h3>Uchwała nr '+esc(u.nr)+' '+esc(u.tytul)+'</h3>'+pasekHTML(R)+'<p class="uch-wyn"><b>'+(u.koniec?(R.podjeta?'Podjęta.':'Niepodjęta.'):(R.podjeta?'Na teraz: większość za.':'Na teraz: brak większości za.'))+'</b> '+wynikTxt(R)+'. Zagłosowało '+R.ile+' z '+R.razem+' lokali.</p><div class="akcje"><button class="btn ramka" type="button" data-rozwin="'+u.id+'" aria-expanded="'+otw+'">'+(otw?'Zwiń listę':'Lista lokali i głosów')+'</button>'+(u.koniec?'':'<button class="btn" type="button" data-koniec="'+u.id+'">Zakończ głosowanie</button>')+'</div><div class="przew" data-lista="'+u.id+'"'+(otw?'':' hidden')+'><table class="lista uch-tab"><thead><tr><th>Lokal</th><th>Właściciel</th><th class="l">Udział</th><th>Głos</th><th>Sposób</th><th></th></tr></thead><tbody>'+wiersze+'</tbody></table></div></article>'}).join('')}
+  fg.lokal.innerHTML=opcjeLok();
+  rysuj();
+  document.addEventListener('change',function(e){if(e.target.name!=='tryb')return;UCH.tryb=e.target.value;uchZapisz();rysuj();inf.textContent=UCH.tryb==='udzialy'?'Głosy liczone są teraz udziałami.':'Głosy liczone są teraz według zasady jeden lokal, jeden głos.'});
+  box.addEventListener('click',function(e){
+   var b=e.target.closest('button');if(!b)return;
+   if(b.dataset.rozwin){var t=$('[data-lista="'+b.dataset.rozwin+'"]',box),o=t.hidden;t.hidden=!o;b.setAttribute('aria-expanded',o);b.textContent=o?'Zwiń listę':'Lista lokali i głosów';return}
+   if(b.dataset.koniec){if(!b.classList.contains('potw')){b.classList.add('potw');b.textContent='Potwierdź: zakończ i pokaż wynik mieszkańcom';return}var u=UCH.lista.filter(function(x){return x.id===b.dataset.koniec})[0];var d=new Date();u.koniec=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);uchZapisz();rysuj();inf.textContent='Głosowanie nad uchwałą nr '+u.nr+' zakończone. Wynik widzą teraz właściciele w Strefie mieszkańca.';return}
+   if(b.dataset.cofnij){var p=b.dataset.cofnij.split('|');delete UCH.glosy[p[0]][p[1]];uchZapisz();rysuj(p[0]);inf.textContent='Głos lokalu '+p[1].replace('/',' / ')+' usunięty.'}
+  });
+  fg.addEventListener('submit',function(e){e.preventDefault();var u=fg.uch.value;if(!u)return;UCH.glosy[u]=UCH.glosy[u]||{};UCH.glosy[u][fg.lokal.value]={g:fg.glos.value,sp:fg.sposob.value,t:Date.now()};uchZapisz();rysuj(u);var ux=UCH.lista.filter(function(x){return x.id===u})[0];inf.textContent='Dopisano głos lokalu '+fg.lokal.value.replace('/',' / ')+' ('+GL_TXT[fg.glos.value]+', '+SP_TXT[fg.sposob.value]+') do uchwały nr '+ux.nr+'. Wynik przeliczony.';inf.scrollIntoView({behavior:'smooth',block:'center'})});
+  fu.addEventListener('submit',function(e){e.preventDefault();var nr=fu.nr.value.trim(),t=fu.tytul.value.trim();if(!nr){fu.nr.focus();return}if(!t){fu.tytul.focus();return}var id='u'+Date.now();UCH.lista.unshift({id:id,nr:nr,tytul:t,opis:fu.opis.value.trim(),do:fu.do.value||'2026-12-31',koniec:null});UCH.glosy[id]={};uchZapisz();fu.reset();rysuj();inf.textContent='Uchwała nr '+nr+' dodana. Właściciele mogą już głosować w Strefie mieszkańca.';inf.scrollIntoView({behavior:'smooth',block:'center'})});
+  $('#uch-reset').addEventListener('click',function(){UCH=uchStart();uchZapisz();rysuj();inf.textContent='Przywrócono przykładowe uchwały i głosy.'});
+ })();
+
 }
 
 var pg=document.body.dataset.page;
