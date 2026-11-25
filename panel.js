@@ -18,6 +18,11 @@ var CENY=[
  {nazwa:'Zużycie wody',miara:'m³',typ:'woda',cena:12.73},
  {nazwa:'Opłata roczna za wodomierze PGK',miara:'zł, jednorazowo',typ:'roczna',cena:15.73,dolicz:true}
 ];
+/* ceny wzoru noty (do historii not i przywracania) oraz tabela zapisana przez Zarzad w tej przegladarce */
+var CENY_BAZA=CENY.map(function(c){return Object.assign({},c)});
+var CENY_KLUCZ='wmk61-ceny',CENY_ZAP=null;
+(function(){try{var z=JSON.parse(localStorage.getItem(CENY_KLUCZ)||'null');if(!z||!Array.isArray(z.ceny))return;var L=z.ceny.filter(function(c){return c&&c.nazwa&&typeof c.cena==='number'&&isFinite(c.cena)});if(!L.length&&z.ceny.length)return;CENY.length=0;L.forEach(function(c){CENY.push(c)});CENY_ZAP=z.zapisano||null}catch(e){}})();
+function zapiszCeny(){try{CENY_ZAP=Date.now();localStorage.setItem(CENY_KLUCZ,JSON.stringify({ceny:CENY,zapisano:CENY_ZAP}));return true}catch(e){return false}}
 
 /* Lokale wg listy Zarzadu (24.11.2026): numer, m2 mieszkania, liczba garazy po 34 m2, liczba osob do odpadow.
    Bloki 61 i 61A sa numerowane tak samo. G6 to garaz wlasciciela z sasiedniej wspolnoty. */
@@ -113,7 +118,7 @@ function notaHTML(N,opt){
 function historia(l){
  var hist=[{m:11,z:7},{m:10,z:8},{m:9,z:6,cel:120},{m:8,z:9,ods:2.15},{m:7,z:7}];
  var stan=l.poprz!=null?l.poprz:(l.obecny!=null?l.obecny:400);
- var cenyH=CENY.map(function(c){return Object.assign({},c,{dolicz:undefined})});
+ var cenyH=CENY_BAZA.map(function(c){return Object.assign({},c,{dolicz:undefined})});
  return hist.map(function(h,ix){
   var mm=('0'+h.m).slice(-2),pm=('0'+(h.m-1)).slice(-2);
   if(ix===0)return {m:h.m,n:nota(l),opis:'bieżąca, termin '+data(OKRES.platnosc)};
@@ -214,24 +219,24 @@ function admin(){
  var root=$('#panel'),pokaz=zakladki(root);pokaz('oplaty');
  var tb=$('#ceny-tab tbody');
  function rysujCeny0(){
-  tb.innerHTML=CENY.map(function(c,i){return '<tr><td>'+(i+1)+'</td><td><input aria-label="Nazwa opłaty '+(i+1)+'" data-nazwa="'+i+'" value="'+esc(c.nazwa)+'">'+(c.typ==='roczna'?'<label class="jedn"><input type="checkbox" data-jedn="'+i+'"'+(c.dolicz?' checked':'')+'> dolicz w nocie za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'</label>':'')+'</td><td>'+esc(c.miara)+'</td><td><div class="cena-in"><input aria-label="Cena jednostkowa brutto pozycji '+(i+1)+'" type="number" inputmode="decimal" step="0.01" min="0" data-cena="'+i+'" value="'+c.cena.toFixed(2)+'"><span>zł</span></div></td><td><button type="button" class="link usun" data-usun="'+i+'" aria-label="Usuń składnik '+esc(c.nazwa)+'">Usuń</button></td></tr>'}).join('');
+  tb.innerHTML=CENY.map(function(c,i){return '<tr><td>'+(i+1)+'</td><td><input aria-label="Nazwa opłaty '+(i+1)+'" data-nazwa="'+i+'" value="'+esc(c.nazwa)+'">'+(c.typ==='roczna'?'<label class="jedn"><input type="checkbox" data-jedn="'+i+'"'+(c.dolicz?' checked':'')+'> dolicz w nocie za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'</label>':'')+'</td><td>'+esc(c.miara)+'</td><td><div class="cena-in"><input aria-label="Cena jednostkowa brutto pozycji '+(i+1)+'" type="text" inputmode="decimal" autocomplete="off" data-cena="'+i+'" value="'+c.cena.toFixed(2).replace('.',',')+'"><span>zł</span></div></td><td><button type="button" class="link usun" data-usun="'+i+'" aria-label="Usuń składnik '+esc(c.nazwa)+'">Usuń</button></td></tr>'}).join('');
  }
  function rysujJednor(){var b=$('#n-jednor');if(!b)return;b.innerHTML=CENY.map(function(c,i){return c.typ==='roczna'?'<label class="chk"><input type="checkbox" data-jedn="'+i+'"'+(c.dolicz?' checked':'')+'> Dolicz w tej nocie: '+esc(c.nazwa)+' ('+zl(c.cena)+' zł za lokal)</label>':''}).join('')}
  function rysujCeny(){rysujCeny0();rysujJednor()}
  rysujCeny();
- document.addEventListener('change',function(e){var t=e.target;if(!t.dataset||t.dataset.jedn===undefined)return;var c=CENY[+t.dataset.jedn];c.dolicz=t.checked;$$('[data-jedn="'+t.dataset.jedn+'"]').forEach(function(x){x.checked=t.checked});przelicz(true);$('#ceny-info').textContent='„'+c.nazwa+'” '+(t.checked?'będzie doliczona':'nie będzie doliczona')+' w nocie za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'.'});
+ document.addEventListener('change',function(e){var t=e.target;if(!t.dataset||t.dataset.jedn===undefined)return;var c=CENY[+t.dataset.jedn];c.dolicz=t.checked;$$('[data-jedn="'+t.dataset.jedn+'"]').forEach(function(x){x.checked=t.checked});przelicz(true);zapiszCeny();stanCen();$('#ceny-info').textContent='„'+c.nazwa+'” '+(t.checked?'będzie doliczona':'nie będzie doliczona')+' w nocie za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'.'});
  tb.addEventListener('click',function(e){
   var b=e.target.closest('[data-usun]');if(!b)return;
   if(!b.classList.contains('potw')){$$('.usun.potw',tb).forEach(function(x){x.classList.remove('potw');x.textContent='Usuń'});b.classList.add('potw');b.textContent='Potwierdź usunięcie';return}
-  var c=CENY.splice(+b.dataset.usun,1)[0];rysujCeny();przelicz(true);
-  $('#ceny-info').textContent='Składnik „'+c.nazwa+'” usunięty: nie będzie go w kolejnych notach. Noty już wystawione zostają bez zmian (w podglądzie zmiana nie jest zapisywana).';
+  var c=CENY.splice(+b.dataset.usun,1)[0];rysujCeny();przelicz(true);zapiszCeny();stanCen();
+  $('#ceny-info').textContent='Składnik „'+c.nazwa+'” usunięty: nie będzie go w kolejnych notach. Noty już wystawione zostają bez zmian.';
  });
  $('#form-skl').addEventListener('submit',function(e){
   e.preventDefault();var fs=e.target,nz=fs.nazwa.value.trim();if(!nz){fs.nazwa.focus();return}
   var typ=fs.typ.value,cena=parseFloat(String(fs.cena.value).replace(',','.'))||0;
   var ix=CENY.length;CENY.forEach(function(c,i){if(c.typ==='woda'||c.typ==='roczna'){if(ix===CENY.length)ix=i}});
   CENY.splice(ix,0,{nazwa:nz,typ:typ,cena:cena,miara:typ==='m2'?'m²':typ==='osoby'?'liczba osób':typ==='roczna'?'zł, jednorazowo':'zł',dolicz:typ==='roczna'?true:undefined});
-  rysujCeny();przelicz(true);fs.reset();
+  rysujCeny();przelicz(true);zapiszCeny();stanCen();fs.reset();
   $('#ceny-info').textContent=(typ==='roczna'?'Dodano opłatę jednorazową „'+nz+'”. Jest zaznaczona do noty za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'; w kolejnych notach wystarczy odznaczyć pole „dolicz w nocie”.':'Dodano składnik „'+nz+'”. Pojawi się w notach wszystkich lokali.');
  });
  function odswiezPodglad(){var N=nota(DEMO);$('#podglad-noty').innerHTML=notaHTML(N,{mala:true})}
@@ -244,7 +249,13 @@ function admin(){
   if(blysk){$$(SEL).forEach(function(e,i){if(przed[i]!==undefined&&przed[i]!==e.textContent){e.classList.remove('blysk');void e.offsetWidth;e.classList.add('blysk')}})}
   rysujLokale();if(!bezWody)rysujWode();
  }
- tb.addEventListener('input',function(e){var t=e.target;if(t.dataset.cena!==undefined){var v=parseFloat(String(t.value).replace(',','.'));if(!isNaN(v)&&v>=0){CENY[+t.dataset.cena].cena=v;przelicz(true)}}else if(t.dataset.nazwa!==undefined){CENY[+t.dataset.nazwa].nazwa=t.value||'Opłata';przelicz(false)}});
+ function cenaZPola(t){var x=String(t.value).replace(/\s/g,'').replace(',','.');if(!/^\d+(\.\d{0,2})?$/.test(x))return null;return Math.round(parseFloat(x)*100)/100}
+ function stanCen(zPrzycisku){var b=$('#ceny-stan');if(!b)return;if(!CENY_ZAP){b.className='woda-stan';b.textContent='Ceny jak we wzorze noty.';return}b.className='woda-stan ok';b.textContent=(zPrzycisku?'Zapisano. ':'Zapisane. ')+'Ostatni zapis: '+godz(CENY_ZAP)+'. Noty wszystkich lokali, E-Kartoteki i Strefa mieszkańca liczą się już według tych cen.'}
+ tb.addEventListener('input',function(e){var t=e.target;if(t.dataset.cena!==undefined){var v=cenaZPola(t);t.classList.toggle('zle',v===null);if(v!==null){CENY[+t.dataset.cena].cena=v;przelicz(true);zapiszCeny();stanCen()}}else if(t.dataset.nazwa!==undefined){CENY[+t.dataset.nazwa].nazwa=t.value||'Opłata';przelicz(false);zapiszCeny();stanCen()}});
+ tb.addEventListener('change',function(e){var t=e.target;if(t.dataset.cena!==undefined){var v=cenaZPola(t);if(v!==null){t.value=v.toFixed(2).replace('.',',');t.classList.remove('zle')}}else if(t.dataset.nazwa!==undefined){rysujJednor()}});
+ stanCen();
+ $('#ceny-zapisz').addEventListener('click',function(){var b=$('#ceny-stan'),zle=$$('input.zle',tb);if(zle.length){b.className='woda-stan brak';b.textContent='Sprawdź cenę w zaznaczonym polu (liczba, np. 16,15). Pozostałe zmiany są zapisane.';zle[0].focus();return}rysujJednor();if(!zapiszCeny()){b.className='woda-stan brak';b.textContent='Ta przeglądarka nie pozwala zapisać danych (tryb prywatny). Zmiany działają do odświeżenia strony.';return}przelicz(false);stanCen(true);$('#ceny-info').textContent='Zapisane ceny: '+CENY.map(function(c){return c.nazwa+' '+zl(c.cena)+' zł'}).join('; ')+'.'});
+ $('#ceny-wzor').addEventListener('click',function(){try{localStorage.removeItem(CENY_KLUCZ)}catch(e){}location.reload()});
  function garHTML(l,i){
   if(!l.gar.length)return '-';
   return l.gar.map(function(g,k){return '<div class="gar">'+liczba(g.m2,2)+' <label>nr <input aria-label="Numer miejsca w garażu, lokal '+l.nr+' blok '+l.bud+', garaż '+(k+1)+'" data-gar="'+i+'-'+k+'" value="'+esc(g.miejsce)+'" maxlength="14"></label></div>'}).join('');
