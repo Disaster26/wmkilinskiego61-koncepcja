@@ -69,6 +69,21 @@
 @media (max-width:900px){.ceny td:nth-child(5){grid-column:2;width:auto;text-align:left}.ceny td:first-child{grid-row:span 4}}
 @media (max-width:640px){.dodaj-skl{grid-template-columns:minmax(0,1fr)}.dodaj-skl .btn{width:100%}}
 </style>
+<style>/* 25.11: E-Kartoteka w Lokalach, dziennik logowan */
+#lokale-tab tr.wiersz{cursor:pointer}#lokale-tab td:last-child{white-space:normal;min-width:120px}#lokale-tab td:last-child .link{display:block}#lokale-tab tr.wiersz:hover td{background:#F4F8FC}#lokale-tab tr.wiersz.otw td{background:#EAF3FB;border-bottom-color:#B9D3EA}
+.rozw{font:inherit;font-size:1rem;width:34px;height:34px;border:2px solid #B9C3CC;border-radius:6px;background:#fff;color:var(--nieb2);cursor:pointer;vertical-align:middle;margin-right:4px;line-height:1}.rozw:hover{border-color:var(--nieb)}
+#lokale-tab tr.det>td{padding:0;background:var(--tlo2);white-space:normal}
+.kart-det{position:sticky;left:0;width:min(1146px,calc(100vw - 34px));padding:18px 16px 22px;white-space:normal}
+.kart-gl{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;margin-bottom:12px}.kart-gl h3{margin:0;color:var(--gran);font-size:1.2rem}.kart-gl p{margin:0;color:var(--szary);font-size:.95rem;flex:1 1 260px}
+.kart-uklad{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px;align-items:start}
+.kart-bok{background:#fff;border:1px solid var(--linia);border-radius:6px;padding:16px}.kart-bok h4{margin:0 0 8px;font-size:1.02rem;color:var(--gran)}.kart-bok h4:not(:first-child){margin-top:18px}
+.kart-hist{list-style:none;margin:0;padding:0;display:grid;gap:6px}.kart-hist button{width:100%;text-align:left;font:inherit;font-size:.95rem;background:#fff;border:2px solid var(--linia);border-radius:6px;padding:8px 12px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;color:var(--tekst)}.kart-hist button b{font-variant-numeric:tabular-nums}.kart-hist button small{grid-column:1/-1;color:var(--szary);font-size:.85rem}.kart-hist button.akt{border-color:var(--nieb);box-shadow:inset 5px 0 0 var(--nieb)}
+.kart-form{margin-top:18px;padding-top:14px;border-top:1px solid var(--linia)}.kart-form .pole{margin-bottom:10px}.kart-form .pole label{font-size:.92rem}.kart-form input,.kart-form textarea{width:100%;font:inherit;font-size:17px;padding:9px 12px;border:2px solid #B9C3CC;border-radius:6px;background:#fff;color:var(--tekst)}.kart-form textarea{min-height:70px}.kart-form input[name=wlasc]{text-align:left}.kart-form input[name=os]{max-width:120px}.kart-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.kart-form .btn{width:100%;min-height:50px}.info.blad{color:var(--czer)}
+.kart-zm{list-style:none;margin:0;padding:0;font-size:.92rem}.kart-zm li{padding:7px 0;border-bottom:1px solid var(--linia)}.kart-zm time{display:block;font-weight:700;color:var(--nieb2);font-size:.85rem}
+@media (max-width:980px){.kart-uklad{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.kart-det{padding:14px 10px 18px}.kart-2{grid-template-columns:minmax(0,1fr)}
+#log-tab thead{display:none}#log-tab,#log-tab tbody{display:block}#log-tab tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px;padding:12px;border-bottom:1px solid var(--linia)}#log-tab td{display:block;border:0;padding:0;white-space:normal}#log-tab td::before{content:attr(data-l);display:block;font-size:.8rem;font-weight:700;color:var(--szary)}}
+</style>
 </head>
 <body data-page="admin">
 <div class="demo-pasek"><div class="wrap"><span>Podgląd panelu Zarządu: dane przykładowe. Zmień cenę w tabeli opłat, a nota przeliczy się od razu.</span><a href="strefa.html">Strefa mieszkańca (demo)</a></div></div>
@@ -95,6 +110,7 @@
    <button data-tab="noty" role="tab">Noty miesięczne</button>
    <button data-tab="ogl" role="tab">Ogłoszenia</button>
    <button data-tab="kalk" role="tab">Kalkulator odsetek</button>
+   <button data-tab="log" role="tab">Dziennik logowań</button>
   </nav>
 
   <section data-panel="oplaty" role="tabpanel">
@@ -116,7 +132,7 @@
 
   <section data-panel="lokale" role="tabpanel" hidden>
    <h2 class="tyt">Lokale i konta mieszkańców</h2>
-   <p class="uwaga">Każdy lokal ma własne konto. Zarząd może nadać nowe hasło, zmienić właściciela po sprzedaży lokalu albo liczbę osób do wywozu odpadów. Garaże mają po 34 m²; lokal z dwoma garażami ma w nocie dwa składniki „Czynsz za miejsce w garażu”. Numer miejsca wpisany przy garażu pojawia się w nocie przy tym składniku.</p>
+   <p class="uwaga">Każdy lokal ma własne konto. Zarząd może nadać nowe hasło, zmienić właściciela po sprzedaży lokalu albo liczbę osób do wywozu odpadów. Garaże mają po 34 m²; lokal z dwoma garażami ma w nocie dwa składniki „Czynsz za miejsce w garażu”. Numer miejsca wpisany przy garażu zapisuje się od razu i pojawia się w nocie przy tym składniku. Kliknięcie lokalu rozwija jego E-Kartotekę: bieżącą notę, historię not i dane, które Zarząd może zmienić (właściciel, liczba osób, odsetki, wpłaty, niedopłata, nadpłata, uwagi). Każda zmiana zapisuje się z datą i godziną w historii zmian lokalu.</p>
    <p class="info" id="lokale-info" aria-live="polite"></p>
    <div class="przew"><table class="lista" id="lokale-tab"><thead><tr><th>Blok</th><th>Lokal</th><th>Właściciel</th><th class="l">Mieszkanie m²</th><th>Garaż m² i nr miejsca</th><th class="l">Osoby</th><th class="l">Nota listopad</th><th>Konto</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="6">Razem</td><td class="l" id="lokale-suma"></td><td></td></tr></tfoot></table></div>
   </section>
@@ -178,6 +194,17 @@
     </div>
    </div>
   </section>
+  <section data-panel="log" role="tabpanel" hidden>
+   <h2 class="tyt">Dziennik logowań</h2>
+   <p class="uwaga">Każde logowanie do Strefy mieszkańca i do Panelu Zarządu zapisuje się tutaj: data i godzina, konto, adres IP, urządzenie oraz to, czy logowanie się udało. Dziennik widzi tylko Zarząd. Wpisy starsze niż 12 miesięcy usuwają się automatycznie (informacja o tym jest w Polityce prywatności).</p>
+   <form class="karta form-noty" id="form-logf">
+    <div class="pole"><label for="lf-konto">Konto</label><select id="lf-konto" name="konto"></select></div>
+    <div class="pole"><label for="lf-wynik">Wynik logowania</label><select id="lf-wynik" name="wynik"><option value="">wszystkie</option><option value="ok">udane</option><option value="zle">nieudane</option></select></div>
+    <p class="uwaga" id="log-ile" style="align-self:end"></p>
+   </form>
+   <div class="przew"><table class="lista" id="log-tab"><thead><tr><th>Data i godzina</th><th>Konto</th><th>Adres IP</th><th>Urządzenie</th><th>Wynik</th></tr></thead><tbody></tbody></table></div>
+   <p class="uwaga" style="margin-top:14px">W podglądzie wpisy są przykładowe. Wejście do demo Strefy mieszkańca w tej przeglądarce dopisuje prawdziwy wpis na górze listy, ale bez adresu IP, bo podgląd nie ma serwera. Na docelowej stronie adres IP zapisuje serwer przy każdym logowaniu.</p>
+  </section>
   <section data-panel="kalk" role="tabpanel" hidden>
    <div class="adm-uklad">
     <form class="karta" id="form-kalk">
@@ -203,310 +230,6 @@
 </main>
 <footer class="stopka-pas"><div class="wrap"><a class="pp" href="kontakt.html#rodo">Polityka prywatności</a><a class="wylinka-badge" href="https://wylinka.pl/?utm_source=wmkilinskiego61.pl&amp;utm_medium=stopka&amp;utm_campaign=wykonanie" rel="noopener" title="Strona wykonana przez Wylinka"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" fill="currentColor"><path d="M9.8 22.8l-1.2-7.9 2.2-3.7 15.5 4.6-.5 1.5-7.2 5.5 4.7 15.6 5-15.6 7 0 4.1 12.7-4.2-.9-2.6 1.8-.8-2.2-5.3 15.6-4.3 0 .4 .2-2.1 2.8-1.3-1.1 1.1-1.4-3.1 .2-.1-1.7 2.2-.1-5.7-16.5-4.8 .6-.8 3.1 0 .5-.3 .5 .8 2.2-1.6 .5-.4-1.3-.8 1.6-1.5-.8 .8-1.6-1.4 .6-.6-1.6 2.3-.8 .2-.4 1.3-4.8 5.9-.8-2.4-6.9zM15.2 13.7l-.1-.4-.4 .8-.1 .8 .1 1 .1 .4 .3 .7 .3-.9 .1-.7 0-.8z"/><path class="wy-pod" d="M37.1 49.8l-4.5-13.3 2.6-1.8 4.2 .9 .9 2.8 3-9.7 0-.5 .1-.8 3.2-8.4 .5-1 .6-1 .9-1.1 1.3-1 1.1-.7 1.4-.5 1.4-.3 .7 0 .9 0 1.2 .3 1.4 .6 .8 .5 .7 .7 .6 .7 .5 .9 .3 .9 .1 .9 0 .8-.2 .9-.5 .9-.5 .6-.7 .5-.7 .3-.1-.1 0-.1 .5-.5 .3-.7 .2-.5 0-.6-.1-.6-.3-.7-.4-.5-.4-.4-.5-.3-.6-.3-.7 0-.7 .1-.6 .1-.5 .4-.5 .5-.3 .5-.2 .7-.1 1.5-1.4 5.1-.8 3.3-.3 .7-.5 .7-6 17.5 1.9 .1-.1 1.7-3.1-.2 1.1 1.4-1.3 1.1-2.1-2.8 .4-.2z"/><path class="wy-old" d="M40.8 50l.4-.2-4.1 0-4.2-12.5 2.5-1.7 4.3 .9 .6 1.9 .6-1.6 0-.3 2.4-7.8 0-.5 .1-.8 3.2-8.4 .4-.8 .6-.9 .9-1.2 .9-.9 1.3-.8 1.4-.6 1.2-.3 1.4-.1 1.3 .1 .6 .2 .8 .3 1.1 .6 .9 .7 .7 .9 .5 .9 .3 .9 .1 1.1-.1 .9-.3 .9-.4 .7-.6 .7-.6 .4-.6 .2-.1-.1 0-.1 .5-.5 .3-.7 .2-.5 0-.5-.1-.6-.2-.6-.3-.5-.4-.5-.5-.3-.6-.3-.7-.1-.6 0-.6 .1-.6 .3-.6 .5-.3 .4-.2 .5-.1 .5-.1 1.5-1.4 5.1-.8 3.3-.3 .7-.5 .7-6 17.5 1.9 .1-.1 1.7-3.1-.2 1.1 1.4-1.3 1.1zM49.6 17.1l.6 1.7-1.5 1.9 .4 .4 1.8-2.1-.7-2.1zM48.1 28.3l.5 1.8-1.7 1.8 .4 .4 1.9-2-.6-2.2zM37.9 41.7l1.7-1.5-.4-.4-1.7 1.4zM42.6 38.7l-1.5 2.8 1.1 2-1.3 2.6 .5 .2 1.5-2.8-1.1-2 1.4-2.5z"/></svg><span>wykonanie: <b>Wylinka</b></span></a></div></footer>
 <script>(function(){var b=document.querySelector('.hamb'),m=document.getElementById('menu');b.addEventListener('click',function(){var o=m.classList.toggle('otw');b.setAttribute('aria-expanded',o)})})();</script>
-<script>/* Podglad: dane przykladowe, wszystko liczone w przegladarce. */
-(function(){
-'use strict';
-var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
-var zl=function(v){return v.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})};
-var m3=function(v){return v==null?'brak':v.toLocaleString('pl-PL',{maximumFractionDigits:3})};
-var liczba=function(v,d){return v.toLocaleString('pl-PL',{minimumFractionDigits:d||0,maximumFractionDigits:d===undefined?2:d})};
-var r2=function(v){return Math.round((v+Number.EPSILON)*100)/100};
-var data=function(iso){var p=iso.split('-');return p[2]+'.'+p[1]+'.'+p[0]};
-var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
-var MIES=['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
-
-/* Tabela oplat administratora: pozycje 1-5 (ceny jak we wzorze noty) */
-var CENY=[
- {nazwa:'Czynsz za mieszkanie i komórkę',miara:'m²',typ:'m2',cena:4.50},
- {nazwa:'Czynsz za miejsce w garażu',miara:'m²',typ:'garaz',cena:4.50},
- {nazwa:'Wywóz odpadów komunalnych',miara:'liczba osób',typ:'osoby',cena:24.00},
- {nazwa:'Zużycie wody',miara:'m³',typ:'woda',cena:12.73},
- {nazwa:'Opłata roczna za wodomierze PGK',miara:'zł, jednorazowo',typ:'roczna',cena:15.73,dolicz:true}
-];
-
-/* Lokale wg listy Zarzadu (24.11.2026): numer, m2 mieszkania, liczba garazy po 34 m2, liczba osob do odpadow.
-   Bloki 61 i 61A sa numerowane tak samo. G6 to garaz wlasciciela z sasiedniej wspolnoty. */
-var GAR_M2=34;
-var SPIS={'61':[['A1',113.26,0,1],['A2',100.63,0,2],['A3',112.19,1,2],['A4',99.45,2,2],['A5',68.89,0,2],['A6',72.20,0,0],['B1',74.72,1,1],['B2',50.61,0,2],['B3',83.27,0,2],['B4',77.77,0,1],['B5',55.48,0,3],['B6',87.45,0,1],['B7',72.20,0,4],['B8',68.33,1,4]],
- '61A':[['A1',113.26,2,4],['A2',100.63,1,3],['A3',112.19,0,2],['A4',99.45,0,1],['A5',68.89,0,3],['A6',72.20,0,2],['B1',74.72,1,2],['B2',50.61,0,1],['B3',83.27,0,3],['B4',77.77,0,2],['B5',55.48,1,2],['B6',87.45,0,0],['B7',72.20,0,5],['B8',68.33,1,0],['G6',0,1,0]]};
-/* stany wodomierzy przykladowe */
-var seed=7;function rnd(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}
-var LOKALE=[];
-['61','61A'].forEach(function(b){SPIS[b].forEach(function(s){
- var gar=[];for(var k=0;k<s[2];k++)gar.push({m2:GAR_M2,miejsce:''});
- var tylkoG=!s[1],poprz=Math.round(180+rnd()*420),zuz=Math.round(3+rnd()*9),os=(rnd(),s[3]);
- LOKALE.push({nr:s[0],bud:b,m2:s[1],gar:gar,tylkoG:tylkoG,os:tylkoG?0:os,poprz:tylkoG?0:poprz,obecny:tylkoG?0:poprz+zuz,odsetki:0,celowe:0,inne:0,niedop:0,nadp:0,doRozl:0,uwagi:''});
-})});
-/* lokal demo mieszkanca: B1 w bloku 61 (mieszkanie i garaz) */
-var DEMO=LOKALE.filter(function(l){return l.bud==='61'&&l.nr==='B1'})[0];Object.assign(DEMO,{poprz:405,obecny:412});
-
-var OKRES={rok:2026,mies:11,wyst:'2026-11-01',platnosc:'2026-11-10',odsetkiOd:'2026-11-12',odczyt:'2026-11-01',odczytPoprz:'2026-09-01',cykl:2,roczna:true,celowe:0};
-
-/* stany wodomierzy zapisane w panelu Zarzadu (w tej przegladarce) */
-var WODA_KLUCZ='wmk61-wodomierze';
-function zuzycie(l){if(l.tylkoG||l.poprz==null||l.obecny==null)return 0;var w=l.obecny-l.poprz;return w>0?Math.round(w*1000)/1000:0}
-(function(){try{var z=JSON.parse(localStorage.getItem(WODA_KLUCZ)||'null');if(!z||!z.stany)return;LOKALE.forEach(function(l){var s=z.stany[l.bud+'/'+l.nr];if(s){l.poprz=s[0];l.obecny=s[1]}});if(z.odczyt){OKRES.odczyt=z.odczyt;OKRES.odczytPoprz=z.odczytPoprz}if(z.cykl)OKRES.cykl=z.cykl;else if(z.odczyt==='2026-11-01'&&z.odczytPoprz==='2026-10-01')OKRES.odczytPoprz='2026-09-01';OKRES.zapisano=z.zapisano||null}catch(e){}})();
-
-function nota(l,ok,ceny){
- ceny=ceny||CENY;ok=ok||OKRES;
- var w=zuzycie(l),rows=[];
- ceny.forEach(function(c){
-  var r={n:c.nazwa,m:c.miara,c:c.cena};
-  if(c.typ==='m2'){r.il=l.m2;r.ild=2;r.v=r2(l.m2*c.cena);r.brak=!l.m2;rows.push(r)}
-  else if(c.typ==='garaz'){
-   if(!l.gar.length){r.il=0;r.v=0;r.brak=true;rows.push(r)}
-   l.gar.forEach(function(g){rows.push({n:c.nazwa+(g.miejsce?', miejsce nr '+g.miejsce:''),m:c.miara,c:c.cena,il:g.m2,ild:2,v:r2(g.m2*c.cena)})});
-  }
-  else if(c.typ==='osoby'){r.il=l.os;r.ild=0;r.v=r2(l.os*c.cena);r.brak=l.tylkoG;rows.push(r)}
-  else if(c.typ==='woda'){if(ok.bezWody){r.n+=' (bez odczytu w tym miesiącu)';r.il=0;r.m3=true;r.v=0;r.brak=l.tylkoG;rows.push(r)}else{r.il=w;r.m3=true;r.v=r2(w*c.cena);r.woda=!l.tylkoG;r.brak=l.tylkoG;rows.push(r)}}
-  else if(c.typ==='roczna'){var dl=c.dolicz===undefined?ok.roczna:c.dolicz;if(!dl)return;delete r.c;r.m='zł';r.v=l.tylkoG?0:r2(c.cena);rows.push(r)}
-  else{delete r.c;r.v=r2(c.cena);rows.push(r)}
- });
- rows.push({n:'Odsetki za nieterminowe wpłaty',m:'zł',v:l.odsetki},{n:'Wpłaty celowe z Uchwały z Zebrania',m:'zł',v:r2(l.celowe+(ok.celowe||0))},{n:'Wpłaty inne',m:'zł',v:l.inne},{n:'Niedopłata (+)',m:'zł',v:l.niedop,sep:true},{n:'Nadpłata (-)',m:'zł',v:l.nadp,sep:true});
- rows.forEach(function(r,i){r.p=i+1});
- var suma=0;for(var k=0;k<rows.length-2;k++)suma+=rows[k].v;suma=r2(suma+l.niedop-l.nadp);
- return {l:l,ok:ok,rows:rows,woda:w,suma:Math.max(0,suma),doRozl:suma<0?r2(-suma):l.doRozl};
-}
-
-function notaHTML(N,opt){
- opt=opt||{};var ok=N.ok,l=N.l;
- var t='<div class="nota'+(opt.mala?' mala':'')+'"><div class="nota-dach" aria-hidden="true"></div><div class="nota-in">';
- t+='<div class="nota-nag"><div><h3>Nota rozliczeniowa za '+MIES[ok.mies-1]+' '+ok.rok+'</h3><p>Lokal '+l.nr+', ul. Kilińskiego '+l.bud+', 97-500 Radomsko</p></div>';
- t+='<div class="nota-kwota"><span>Do zapłaty</span><b data-suma>'+zl(N.suma)+' zł</b><span>do '+data(ok.platnosc)+'</span></div></div>';
- /* tabela jak w arkuszu */
- t+='<div class="tab-wrap"><table class="nota-tab"><thead><tr><th>Poz.</th><th>Nazwa opłaty</th><th>Miara</th><th class="l">Ilość</th><th class="l">Cena jedn. zł brutto</th><th class="l">Wartość brutto zł</th><th class="l">Stan wodomierza obecny / data</th><th class="l">Poprzedni / data</th></tr></thead><tbody>';
- N.rows.forEach(function(r){
-  var il=r.il===undefined?'':(r.brak?'nie dotyczy':(r.m3?m3(r.il):liczba(r.il,r.ild))),c=r.c===undefined?'':zl(r.c);
-  t+='<tr'+(r.sep?' class="sep"':'')+'><td>'+r.p+'</td><td>'+esc(r.n)+'</td><td>'+esc(r.m)+'</td><td class="l">'+il+'</td><td class="l">'+c+'</td><td class="l" data-v="'+r.p+'">'+zl(r.v)+'</td>';
-  t+=r.woda?'<td class="l">'+m3(l.obecny)+'<small>'+data(ok.odczyt)+'</small></td><td class="l">'+m3(l.poprz)+'<small>'+data(ok.odczytPoprz)+'</small></td>':'<td></td><td></td>';
-  t+='</tr>';
- });
- var P=N.rows.length;
- t+='<tr class="suma"><td>'+(P+1)+'</td><td colspan="4">Kwota należności ogółem do zapłaty</td><td class="l">'+zl(N.suma)+'</td><td></td><td></td></tr>';
- t+='<tr><td>'+(P+2)+'</td><td colspan="4">Kwota do rozliczenia w następnej Nocie jako nadpłata</td><td class="l">'+zl(N.doRozl)+'</td><td></td><td></td></tr>';
- t+='</tbody></table></div>';
- /* wersja na telefon: kazda pozycja jako wiersz z wyliczeniem */
- t+='<ol class="nota-lista">';
- N.rows.forEach(function(r){
-  var wyl='';
-  if(r.brak)wyl='nie dotyczy';
-  else if(r.woda)wyl=m3(l.obecny)+' − '+m3(l.poprz)+' = '+m3(r.il)+' m³ × '+zl(r.c)+' zł';
-  else if(r.il!==undefined)wyl=liczba(r.il,r.ild)+' '+(r.m==='liczba osób'?'os.':r.m)+' × '+zl(r.c)+' zł';
-  t+='<li><span class="np">'+r.p+'</span><div><b>'+esc(r.n)+'</b>'+(wyl?'<small>'+wyl+'</small>':'')+(r.woda?'<small>odczyt '+data(ok.odczyt)+', poprzedni '+data(ok.odczytPoprz)+'</small>':'')+'</div><span class="kw">'+zl(r.v)+' zł</span></li>';
- });
- t+='<li class="suma"><span class="np">'+(P+1)+'</span><div><b>Kwota należności ogółem do zapłaty</b></div><span class="kw">'+zl(N.suma)+' zł</span></li>';
- t+='<li><span class="np">'+(P+2)+'</span><div><b>Kwota do rozliczenia w następnej Nocie jako nadpłata</b></div><span class="kw">'+zl(N.doRozl)+' zł</span></li></ol>';
- t+='<dl class="nota-daty"><div><dt>'+(P+3)+'. Data wystawienia Noty</dt><dd>'+data(ok.wyst)+'</dd></div><div><dt>'+(P+4)+'. Płatność do</dt><dd>'+data(ok.platnosc)+'</dd></div><div><dt>'+(P+5)+'. Odsetki naliczane od</dt><dd>'+data(ok.odsetkiOd)+'</dd></div><div><dt>'+(P+6)+'. Uwagi do Noty</dt><dd>'+(l.uwagi?esc(l.uwagi):'brak')+'</dd></div></dl>';
- t+='</div></div>';
- return t;
-}
-window.WM={nota:nota,notaHTML:notaHTML,CENY:CENY,LOKALE:LOKALE,DEMO:DEMO,OKRES:OKRES,zl:zl,data:data,MIES:MIES,liczba:liczba,esc:esc};
-
-/* zakladki */
-function zakladki(root){
- var tabs=$$('[data-tab]',root);
- function pokaz(id,fokus){
-  tabs.forEach(function(t){var a=t.dataset.tab===id;t.classList.toggle('akt',a);t.setAttribute('aria-selected',a)});
-  $$('[data-panel]',root).forEach(function(p){p.hidden=p.dataset.panel!==id});
-  if(fokus){var p=$('[data-panel="'+id+'"]',root);if(p){p.setAttribute('tabindex','-1');p.focus({preventScroll:true});var y=p.getBoundingClientRect().top+scrollY-90;if(y<scrollY)scrollTo(0,y)}}
- }
- root.addEventListener('click',function(e){var t=e.target.closest('[data-tab],[data-idz]');if(!t)return;e.preventDefault();pokaz(t.dataset.tab||t.dataset.idz,true)});
- return pokaz;
-}
-
-/* ===== STREFA MIESZKANCA ===== */
-function strefa(){
- var log=$('#logowanie'),app=$('#app');
- function wejdz(e){e&&e.preventDefault();log.hidden=true;app.hidden=false;scrollTo(0,0);$('#app h2').focus()}
- $('#form-log').addEventListener('submit',wejdz);$('#demo-wejdz').addEventListener('click',wejdz);
- $('#wyloguj').addEventListener('click',function(){app.hidden=true;log.hidden=false;scrollTo(0,0)});
- var pokaz=zakladki(app);pokaz('pulpit');
- var N=nota(DEMO);
- $('#nota-biezaca').innerHTML=notaHTML(N);
- $('#pulpit-kwota').textContent=zl(N.suma)+' zł';
- /* historia: poprzednie miesiace */
- var hist=[{m:11,z:7,ro:true},{m:10,z:8},{m:9,z:6,cel:120},{m:8,z:9,ods:2.15},{m:7,z:7}],stan=412;
- var lista=$('#historia-lista'),out='';
- hist.forEach(function(h,ix){
-  var l=Object.assign({},DEMO,{obecny:stan,poprz:stan-h.z,odsetki:h.ods||0,celowe:h.cel||0,uwagi:h.cel?'Wpłata celowa zgodnie z Uchwałą nr 3/2026.':''});stan-=h.z;
-  var mm=('0'+h.m).slice(-2),pm=('0'+(h.m-1)).slice(-2);
-  var ok={rok:2026,mies:h.m,wyst:'2026-'+mm+'-01',platnosc:'2026-'+mm+'-10',odsetkiOd:'2026-'+mm+'-12',odczyt:'2026-'+mm+'-01',odczytPoprz:'2026-'+pm+'-01',roczna:!!h.ro,celowe:0};
-  var n=nota(l,ok);h.n=n;
-  out+='<li><button type="button" data-h="'+ix+'"'+(ix===0?' class="akt"':'')+'><span>'+MIES[h.m-1]+' 2026</span><b>'+zl(n.suma)+' zł</b><small>'+(ix===0?'bieżąca, termin '+data(ok.platnosc):'rozliczona')+'</small></button></li>';
- });
- lista.innerHTML=out;
- var hp=$('#historia-nota');hp.innerHTML=notaHTML(hist[0].n);
- lista.addEventListener('click',function(e){var b=e.target.closest('button[data-h]');if(!b)return;$$('button',lista).forEach(function(x){x.classList.toggle('akt',x===b)});hp.innerHTML=notaHTML(hist[+b.dataset.h].n);if(innerWidth<900)hp.scrollIntoView({behavior:'smooth',block:'start'})});
- $$('[data-druk]').forEach(function(b){b.addEventListener('click',function(){print()})});
- /* glosowanie demo */
- $$('.glos').forEach(function(g){g.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$$('button',g).forEach(function(x){x.setAttribute('aria-pressed',x===b)});var w=g.nextElementSibling;w.hidden=false;w.textContent='Zapisano odpowiedź: '+b.textContent.toLowerCase()+'. W podglądzie głos nie jest nigdzie wysyłany.'})});
-}
-
-/* ===== PANEL ZARZADU ===== */
-function admin(){
- var root=$('#panel'),pokaz=zakladki(root);pokaz('oplaty');
- var tb=$('#ceny-tab tbody');
- function rysujCeny0(){
-  tb.innerHTML=CENY.map(function(c,i){return '<tr><td>'+(i+1)+'</td><td><input aria-label="Nazwa opłaty '+(i+1)+'" data-nazwa="'+i+'" value="'+esc(c.nazwa)+'">'+(c.typ==='roczna'?'<label class="jedn"><input type="checkbox" data-jedn="'+i+'"'+(c.dolicz?' checked':'')+'> dolicz w nocie za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'</label>':'')+'</td><td>'+esc(c.miara)+'</td><td><div class="cena-in"><input aria-label="Cena jednostkowa brutto pozycji '+(i+1)+'" type="number" inputmode="decimal" step="0.01" min="0" data-cena="'+i+'" value="'+c.cena.toFixed(2)+'"><span>zł</span></div></td><td><button type="button" class="link usun" data-usun="'+i+'" aria-label="Usuń składnik '+esc(c.nazwa)+'">Usuń</button></td></tr>'}).join('');
- }
- function rysujJednor(){var b=$('#n-jednor');if(!b)return;b.innerHTML=CENY.map(function(c,i){return c.typ==='roczna'?'<label class="chk"><input type="checkbox" data-jedn="'+i+'"'+(c.dolicz?' checked':'')+'> Dolicz w tej nocie: '+esc(c.nazwa)+' ('+zl(c.cena)+' zł za lokal)</label>':''}).join('')}
- function rysujCeny(){rysujCeny0();rysujJednor()}
- rysujCeny();
- document.addEventListener('change',function(e){var t=e.target;if(!t.dataset||t.dataset.jedn===undefined)return;var c=CENY[+t.dataset.jedn];c.dolicz=t.checked;$$('[data-jedn="'+t.dataset.jedn+'"]').forEach(function(x){x.checked=t.checked});przelicz(true);$('#ceny-info').textContent='„'+c.nazwa+'” '+(t.checked?'będzie doliczona':'nie będzie doliczona')+' w nocie za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'.'});
- tb.addEventListener('click',function(e){
-  var b=e.target.closest('[data-usun]');if(!b)return;
-  if(!b.classList.contains('potw')){$$('.usun.potw',tb).forEach(function(x){x.classList.remove('potw');x.textContent='Usuń'});b.classList.add('potw');b.textContent='Potwierdź usunięcie';return}
-  var c=CENY.splice(+b.dataset.usun,1)[0];rysujCeny();przelicz(true);
-  $('#ceny-info').textContent='Składnik „'+c.nazwa+'” usunięty: nie będzie go w kolejnych notach. Noty już wystawione zostają bez zmian (w podglądzie zmiana nie jest zapisywana).';
- });
- $('#form-skl').addEventListener('submit',function(e){
-  e.preventDefault();var fs=e.target,nz=fs.nazwa.value.trim();if(!nz){fs.nazwa.focus();return}
-  var typ=fs.typ.value,cena=parseFloat(String(fs.cena.value).replace(',','.'))||0;
-  var ix=CENY.length;CENY.forEach(function(c,i){if(c.typ==='woda'||c.typ==='roczna'){if(ix===CENY.length)ix=i}});
-  CENY.splice(ix,0,{nazwa:nz,typ:typ,cena:cena,miara:typ==='m2'?'m²':typ==='osoby'?'liczba osób':typ==='roczna'?'zł, jednorazowo':'zł',dolicz:typ==='roczna'?true:undefined});
-  rysujCeny();przelicz(true);fs.reset();
-  $('#ceny-info').textContent=(typ==='roczna'?'Dodano opłatę jednorazową „'+nz+'”. Jest zaznaczona do noty za '+MIES[OKRES.mies-1]+' '+OKRES.rok+'; w kolejnych notach wystarczy odznaczyć pole „dolicz w nocie”.':'Dodano składnik „'+nz+'”. Pojawi się w notach wszystkich lokali.');
- });
- function odswiezPodglad(){var N=nota(DEMO);$('#podglad-noty').innerHTML=notaHTML(N,{mala:true})}
- function przelicz(blysk,bezWody){
-  var SEL='#podglad-noty .kw,#podglad-noty [data-suma],#suma-wszystkich,#suma-a7';
-  var przed=$$(SEL).map(function(e){return e.textContent});
-  var N=nota(DEMO);$('#podglad-noty').innerHTML=notaHTML(N,{mala:true});
-  var suma=0;LOKALE.forEach(function(l){suma+=nota(l).suma});
-  $('#suma-wszystkich').textContent=zl(suma)+' zł';$('#suma-a7').textContent=zl(N.suma)+' zł';
-  if(blysk){$$(SEL).forEach(function(e,i){if(przed[i]!==undefined&&przed[i]!==e.textContent){e.classList.remove('blysk');void e.offsetWidth;e.classList.add('blysk')}})}
-  rysujLokale();if(!bezWody)rysujWode();
- }
- tb.addEventListener('input',function(e){var t=e.target;if(t.dataset.cena!==undefined){var v=parseFloat(String(t.value).replace(',','.'));if(!isNaN(v)&&v>=0){CENY[+t.dataset.cena].cena=v;przelicz(true)}}else if(t.dataset.nazwa!==undefined){CENY[+t.dataset.nazwa].nazwa=t.value||'Opłata';przelicz(false)}});
- function garHTML(l,i){
-  if(!l.gar.length)return '-';
-  return l.gar.map(function(g,k){return '<div class="gar">'+liczba(g.m2,2)+' <label>nr <input aria-label="Numer miejsca w garażu, lokal '+l.nr+' blok '+l.bud+', garaż '+(k+1)+'" data-gar="'+i+'-'+k+'" value="'+esc(g.miejsce)+'" maxlength="14" placeholder="np. 61A/G6"></label></div>'}).join('');
- }
- function rysujLokale(){
-  var s=0;$('#lokale-tab tbody').innerHTML=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;return '<tr'+(l===DEMO?' class="demo"':'')+'><td>'+l.bud+'</td><td><b>'+l.nr+'</b></td><td>'+(l.tylkoG?'Właściciel garażu '+l.nr+' (sąsiednia wspólnota)':'Właściciel lokalu '+l.nr)+'</td><td class="l">'+(l.m2?liczba(l.m2,2):'-')+'</td><td>'+garHTML(l,i)+'</td><td class="l">'+(l.tylkoG?'-':l.os)+'</td><td class="l">'+zl(n.suma)+'</td><td><span class="ok">aktywne</span> <button type="button" class="link" data-haslo="'+i+'">Nowe hasło</button></td></tr>'}).join('');
-  $('#lokale-suma').textContent=zl(s)+' zł';
- }
- $('#lokale-tab').addEventListener('input',function(e){var t=e.target;if(!t.dataset.gar)return;var p=t.dataset.gar.split('-'),l=LOKALE[+p[0]];l.gar[+p[1]].miejsce=t.value.trim();if(l===DEMO)odswiezPodglad()});
- function cenaWody(){var c=CENY.filter(function(x){return x.typ==='woda'})[0];return c?c.cena:0}
- function wodaKomorki(l){
-  var w=zuzycie(l),z,k;
-  if(l.poprz==null||l.obecny==null){z='<span class="w-brak">uzupełnij oba stany</span>';k='-'}
-  else if(l.obecny<l.poprz){z='<span class="w-zle">obecny mniejszy niż poprzedni</span>';k='-'}
-  else{z=m3(w)+(w>WODA_DUZO?' <span class="w-uwaga">sprawdź</span>':'');k=zl(r2(w*cenaWody()))}
-  return [z,k];
- }
- var WODA_DUZO=40;
- function poleWody(l,i,pole,opis){return '<input aria-label="'+opis+' wodomierza lokalu '+l.nr+' blok '+l.bud+'" type="text" inputmode="decimal" autocomplete="off" data-woda="'+i+'" data-pole="'+pole+'" value="'+(l[pole]==null?'':m3(l[pole]).replace(/\s/g,''))+'">'}
- function rysujWode(){
-  $('#woda-tab tbody').innerHTML=LOKALE.map(function(l,i){if(l.tylkoG)return '';var c=wodaKomorki(l);return '<tr data-wiersz="'+i+'"><td data-l="Blok">'+l.bud+'</td><td data-l="Lokal"><b>'+l.nr+'</b></td><td class="l" data-l="Stan poprzedni m³">'+poleWody(l,i,'poprz','Stan poprzedni')+'</td><td class="l" data-l="Stan obecny m³">'+poleWody(l,i,'obecny','Stan obecny')+'</td><td class="l" data-l="Zużycie m³" data-z>'+c[0]+'</td><td class="l" data-l="Kwota za wodę zł" data-k>'+c[1]+'</td></tr>'}).join('');
-  $('#woda-data').textContent=data(OKRES.odczyt);$('#woda-hp').textContent=data(OKRES.odczytPoprz);$('#woda-ho').textContent=data(OKRES.odczyt);
- }
- function czytajStan(v){v=String(v==null?'':v).replace(/[\s ]/g,'').replace(/m3|m³/gi,'').replace(',','.');if(v==='')return null;if(!/^\d+(\.\d+)?$/.test(v))return NaN;return Math.round(parseFloat(v)*1000)/1000}
- function zapiszWode(){try{var st={};LOKALE.forEach(function(l){if(!l.tylkoG)st[l.bud+'/'+l.nr]=[l.poprz,l.obecny]});localStorage.setItem(WODA_KLUCZ,JSON.stringify({stany:st,odczyt:OKRES.odczyt,odczytPoprz:OKRES.odczytPoprz,cykl:OKRES.cykl,zapisano:OKRES.zapisano}))}catch(e){}}
- /* cykl odczytow: co 2 miesiace (1. dzien miesiaca nieparzystego) albo co miesiac */
- function dodajMies(iso,n){var p=iso.split('-'),r=+p[0],m=+p[1]-1+n;r+=Math.floor(m/12);m=((m%12)+12)%12;return r+'-'+('0'+(m+1)).slice(-2)+'-01'}
- function nastOdczyt(){var n=dodajMies(OKRES.odczyt,1);if(OKRES.cykl==2&&(+n.split('-')[1])%2===0)n=dodajMies(n,1);return n}
- function kompletWody(){var w=0,b=0,z=0,suma=0;LOKALE.forEach(function(l){if(l.tylkoG)return;if(l.poprz==null||l.obecny==null)b++;else if(l.obecny<l.poprz)z++;else{w++;suma+=zuzycie(l)}});return {w:w,b:b,z:z,suma:Math.round(suma*1000)/1000,ile:w+b+z}}
- function godz(d){d=new Date(d);return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear()+', godz. '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
- function stanWody(){
-  var e=$('#woda-stan'),k=kompletWody();
-  if(OKRES.zapisano){e.className='woda-stan ok';e.textContent='Odczyt z '+data(OKRES.odczyt)+' zapisany '+godz(OKRES.zapisano)+'. Uzupełnione lokale: '+k.w+' z '+k.ile+', zużycie razem '+m3(k.suma)+' m³.'+(k.b||k.z?' Uwaga: '+(k.b?k.b+' bez stanu':'')+(k.b&&k.z?', ':'')+(k.z?k.z+' z obecnym mniejszym niż poprzedni':'')+'.':'')}
-  else{e.className='woda-stan brak';e.textContent='Odczyt z '+data(OKRES.odczyt)+' nie jest jeszcze zapisany. Uzupełnione lokale: '+k.w+' z '+k.ile+'. Po wpisaniu wszystkich stanów kliknij Zapisz odczyt.'}
-  $('#woda-nast').textContent='Rozpocznij następny odczyt ('+data(nastOdczyt())+')';
-  var fc=$('#form-cykl');fc.cykl.value=String(OKRES.cykl);fc.pop.value=OKRES.odczytPoprz;fc.ob.value=OKRES.odczyt;
-  var no=$('#n-woda-opis');if(no)no.textContent='Dolicz wodę z odczytu '+data(OKRES.odczyt)+' (poprzedni '+data(OKRES.odczytPoprz)+')';
- }
- function zatwierdzWode(){
-  var k=kompletWody(),info=$('#woda-info');
-  if(k.b||k.z){
-   var brak=[];LOKALE.forEach(function(l){if(!l.tylkoG&&(l.poprz==null||l.obecny==null||l.obecny<l.poprz))brak.push(l.bud+' '+l.nr)});
-   if(!confirm('Nie wszystkie lokale mają poprawne stany ('+brak.join(', ')+'). Zapisać odczyt mimo to? Dla tych lokali woda w nocie wyniesie 0 zł.'))return;
-  }
-  OKRES.zapisano=Date.now();zapiszWode();stanWody();
-  info.textContent='Zapisano odczyt z '+data(OKRES.odczyt)+'. Noty policzą wodę z tego odczytu.';
-  $('#woda-stan').scrollIntoView({behavior:'smooth',block:'center'});
- }
- var wt=$('#woda-tab');
- wt.addEventListener('change',function(e){
-  var t=e.target;if(t.dataset.woda===undefined)return;
-  var l=LOKALE[+t.dataset.woda],pole=t.dataset.pole,v=czytajStan(t.value),info=$('#woda-info'),kto='Lokal '+l.nr+' (blok '+l.bud+'): ';
-  if(isNaN(v)&&v!==null){t.value=l[pole]==null?'':m3(l[pole]).replace(/\s/g,'');info.textContent=kto+'wpisz sam stan licznika, np. 412 albo 412,345.';return}
-  l[pole]=v;t.value=v==null?'':m3(v).replace(/\s/g,'');
-  var tr=t.closest('tr'),c=wodaKomorki(l);tr.querySelector('[data-z]').innerHTML=c[0];tr.querySelector('[data-k]').innerHTML=c[1];
-  if(l.poprz==null||l.obecny==null)info.textContent=kto+'zapisano. Uzupełnij '+(l.poprz==null?'stan poprzedni':'stan obecny')+', wtedy policzy się zużycie.';
-  else if(l.obecny<l.poprz)info.textContent=kto+'stan obecny ('+m3(l.obecny)+') jest mniejszy niż poprzedni ('+m3(l.poprz)+'). Sprawdź odczyt, do czasu poprawki woda w nocie wynosi 0 zł.';
-  else info.textContent=kto+'zapisano, zużycie '+m3(zuzycie(l))+' m³'+(zuzycie(l)>WODA_DUZO?' (dużo jak na jeden okres, sprawdź odczyt).':'.');
-  OKRES.zapisano=null;zapiszWode();stanWody();przelicz(false,true);
- });
- wt.addEventListener('keydown',function(e){
-  var t=e.target;if(e.key!=='Enter'||t.dataset.woda===undefined)return;e.preventDefault();
-  var pola=$$('#woda-tab input[data-pole="'+t.dataset.pole+'"]'),ix=pola.indexOf(t);
-  t.dispatchEvent(new Event('change',{bubbles:true}));
-  if(pola[ix+1]){pola[ix+1].focus();pola[ix+1].select()}
- });
- $('#woda-import').addEventListener('click',function(){$('#woda-info').textContent='W docelowej stronie tutaj wczytuje się plik z odczytem zdalnym wodomierzy, a stany wpisują się same. W podglądzie stany wpisuje się ręcznie.'});
- /* nastepny odczyt: obecne stany przechodza do kolumny Poprzedni */
- $('#woda-nast').addEventListener('click',function(){
-  var stare=OKRES.odczyt;
-  if(!OKRES.zapisano&&!confirm('Odczyt z '+data(stare)+' nie jest zapisany. Mimo to przejść do następnego odczytu?'))return;
-  LOKALE.forEach(function(l){if(!l.tylkoG){l.poprz=l.obecny;l.obecny=null}});
-  OKRES.odczytPoprz=stare;OKRES.odczyt=nastOdczyt();OKRES.zapisano=null;
-  zapiszWode();przelicz(false);stanWody();
-  $('#woda-info').textContent='Stany z '+data(stare)+' przeszły do kolumny Poprzedni. Wystarczy wpisać nowe stany obecne (albo wczytać plik z odczytem zdalnym).';
- });
- $('#woda-zapisz').addEventListener('click',zatwierdzWode);$('#woda-zapisz2').addEventListener('click',zatwierdzWode);
- var fc=$('#form-cykl');
- fc.addEventListener('submit',function(e){e.preventDefault()});
- fc.addEventListener('change',function(e){
-  var t=e.target;
-  if(t.name==='cykl'){OKRES.cykl=+t.value;OKRES.odczytPoprz=dodajMies(OKRES.odczyt,-OKRES.cykl);$('#woda-info').textContent=OKRES.cykl==2?'Odczyty co 2 miesiące: 1 stycznia, 1 marca, 1 maja, 1 lipca, 1 września, 1 listopada.':'Odczyty co miesiąc: zawsze 1. dnia miesiąca.'}
-  else if(t.name==='ob'&&t.value){OKRES.odczyt=t.value}
-  else if(t.name==='pop'&&t.value){OKRES.odczytPoprz=t.value}
-  OKRES.zapisano=null;zapiszWode();rysujWode();stanWody();
- });
- $('#woda-czysc').addEventListener('click',function(){
-  LOKALE.forEach(function(l){if(!l.tylkoG){l.poprz=null;l.obecny=null}});OKRES.zapisano=null;zapiszWode();przelicz(false);stanWody();
-  $('#woda-info').textContent='Stany wyczyszczone. Wpisz stan poprzedni i obecny dla każdego lokalu.';
-  var p=$('#woda-tab input');if(p)p.focus();
- });
- $('#woda-przyklad').addEventListener('click',function(){try{localStorage.removeItem(WODA_KLUCZ)}catch(e){}location.reload()});
- /* noty */
- var f=$('#form-noty');
- f.addEventListener('submit',function(e){
-  e.preventDefault();
-  var mi=+f.mies.value;OKRES.mies=mi;var mm=('0'+mi).slice(-2),pm=('0'+(mi===1?12:mi-1)).slice(-2);
-  OKRES.wyst=f.wyst.value;OKRES.platnosc=f.plat.value;OKRES.odsetkiOd=f.ods.value;OKRES.bezWody=!f.woda.checked;
-  OKRES.celowe=parseFloat(String(f.celowe.value).replace(',','.'))||0;rysujCeny();
-  var s=0,rows=LOKALE.map(function(l,i){var n=nota(l);s+=n.suma;return '<tr><td>'+l.bud+'</td><td><b>'+l.nr+'</b></td><td class="l">'+zl(n.suma)+'</td><td><button type="button" class="link" data-pokaz="'+i+'">Pokaż notę</button></td></tr>'}).join('');
-  $('#noty-wynik').hidden=false;
-  $('#noty-podsum').textContent='Wygenerowano 29 not za '+MIES[mi-1]+' 2026'+(OKRES.bezWody?' (bez wody, w tym miesiącu nie było odczytu)':', woda z odczytu '+data(OKRES.odczyt))+'. Suma należności: '+zl(s)+' zł. Właściciele zobaczą swoje noty po zalogowaniu.';
-  $('#noty-tab tbody').innerHTML=rows;$('#noty-jedna').innerHTML='';
-  przelicz(false);
-  $('#noty-podsum').focus();
- });
- $('#noty-tab').addEventListener('click',function(e){var b=e.target.closest('[data-pokaz]');if(!b)return;var j=$('#noty-jedna');j.innerHTML=notaHTML(nota(LOKALE[+b.dataset.pokaz]));j.scrollIntoView({behavior:'smooth',block:'start'})});
- /* ogloszenia */
- var fo=$('#form-ogl');
- fo.addEventListener('submit',function(e){e.preventDefault();var t=fo.tytul.value.trim();if(!t){fo.tytul.focus();return}var li=document.createElement('li');li.innerHTML='<b>'+esc(t)+'</b><span>'+(fo.stala.checked?'informacja stała':'nowa informacja')+', dodano dziś</span>';$('#ogl-lista').prepend(li);fo.reset();$('#ogl-info').textContent='Ogłoszenie widzą teraz wszyscy mieszkańcy w Strefie mieszkańca (w podglądzie tylko na tej stronie).'});
- /* kalkulator odsetek: kwota x stopa x dni / 365 */
- var fk=$('#form-kalk');
- function kalk(){
-  var kw=parseFloat(String(fk.kwota.value).replace(',','.'))||0,st=parseFloat(String(fk.stopa.value).replace(',','.'))||0;
-  var t=Date.parse(fk.termin.value),z=Date.parse(fk.zaplata.value),dni=(isNaN(t)||isNaN(z))?0:Math.max(0,Math.round((z-t)/864e5));
-  var o=Math.round(kw*st/100*dni/365*100)/100;
-  $('#k-dni').textContent=dni;$('#k-ods').textContent=zl(o)+' zł';$('#k-raz').textContent=zl(kw+o)+' zł';
-  $('#k-wzor').textContent=dni?zl(kw)+' zł × '+liczba(st,2)+'% × '+dni+' dni / 365 = '+zl(o)+' zł. Odsetki liczone od dnia po terminie płatności do dnia zapłaty włącznie.':'Zapłata w terminie, odsetki nie przysługują.';
- }
- f.mies.addEventListener('change',function(){var mi=+f.mies.value;f.woda.checked=!(OKRES.cykl==2&&mi%2===0)});
- fk.addEventListener('input',kalk);fk.addEventListener('submit',function(e){e.preventDefault()});kalk();
- /* nowe haslo dla lokalu */
- $('#lokale-tab').addEventListener('click',function(e){var b=e.target.closest('[data-haslo]');if(!b)return;var l=LOKALE[+b.dataset.haslo];b.parentNode.innerHTML='<b class="ok">hasło zmienione</b>';$('#lokale-info').textContent='Lokal '+l.nr+' (blok '+l.bud+'): nadano nowe hasło. Poprzednie przestało działać, a nowe Zarząd przekazuje właścicielowi (w podglądzie nic nie jest zapisywane).'});
- przelicz(false);stanWody();
-}
-
-var pg=document.body.dataset.page;
-if(pg==='strefa')strefa();if(pg==='admin')admin();
-})();
-</script>
+<script src="panel.js?v=2511"></script>
 </body>
 </html>
